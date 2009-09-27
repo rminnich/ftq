@@ -28,20 +28,9 @@
 #define MIN_BITS       3
 
 /**
- * set up for coarser work grains than default
+ * Work grain, which is now fixed. 
  */
-#ifdef CORE15
-#define MULTIITER
-#define ITERCOUNT      8
-#endif
-#ifdef CORE31
-#define MULTIITER
-#define ITERCOUNT      16
-#endif
-#ifdef CORE63
-#define MULTIITER
 #define ITERCOUNT      32
-#endif
 
 /**
  * global variables
@@ -78,9 +67,7 @@ ftq_core(void *arg)
 	/* thread number, zero based. */
 	int             thread_num = (int) (intptr_t) arg;
 	int             i, offset;
-#ifdef MULTIITER
 	int             k;
-#endif
 	ticks           now, last, endinterval;
 	unsigned long   done;
 	unsigned long long count;
@@ -99,14 +86,10 @@ ftq_core(void *arg)
 		count = 0;
 
 		for (now = last; now < endinterval;) {
-#ifdef MULTIITER
 			for (k = 0; k < ITERCOUNT; k++)
 				count++;
 			for (k = 0; k < (ITERCOUNT - 1); k++)
 				count--;
-#else
-			count++;
-#endif
 
 			now = getticks();
 		}
@@ -133,14 +116,10 @@ ftq_core(void *arg)
 		count = 0;
 
 		for (now = last; now < endinterval;) {
-#ifdef MULTIITER
 			for (k = 0; k < ITERCOUNT; k++)
 				count++;
 			for (k = 0; k < (ITERCOUNT - 1); k++)
 				count--;
-#else
-			count++;
-#endif
 
 			now = getticks();
 		}
