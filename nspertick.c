@@ -6,6 +6,7 @@
  * for details.
  */
 #include "ftq.h"
+#include <sys/time.h>
 
 /**
  * macros and defines
@@ -29,23 +30,30 @@ int
 main(int argc, char **argv)
 {
 	/* local variables */
-	unsigned long start, end, timestart, timeend;
-	float ns;
-	float nsperticks;
+	struct timeval x;
+	ticks start, end; 
+	double el;
+	unsigned long timestart, timeend;
+	double ns;
+	double nsperticks;
 
+	gettimeofday(&x, NULL);
+	timestart = x.tv_sec;
 	start = getticks();
-	timeend = timestart = 0;
 	sleep(30);
 	/* how we would do it in Plan 9
 	while (timeend - timestart < 30)
 		timeend = seconds();
 	 */
-	timeend = 30;
 	end = getticks();
+	gettimeofday(&x, NULL);
+	timeend = x.tv_sec;
 	ns = 1e9 * (timeend - timestart); 
-	nsperticks = ns / (end - start);
-	fprintf(stderr, "time %ld seconds; %ld ticks; nsperticks %g\n", 
-			timeend - timestart, end - start, nsperticks);
-	printf("nsperticks = %f\n", nsperticks);
+	el = elapsed(end, start);
+	nsperticks = ns / el;
+	fprintf(stderr, "elapsed %g\n", el);
+	fprintf(stderr, "time %ld seconds; %g ticks; nsperticks %g\n", 
+			timeend - timestart, el, nsperticks);
+	printf("nsperticks = %g\n", nsperticks);
 	return 0;
 }
