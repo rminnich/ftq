@@ -1,3 +1,5 @@
+/* yikes! */
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -10,6 +12,7 @@
 #include <fcntl.h>
 #include <string.h>
 #include <time.h>
+#include <sched.h>
 #include "cycle.h"
 
 /*
@@ -21,6 +24,6 @@
 #include "cycle.h"
 
 /* what clock do we use for the OS timer? */
-#define TICKCLOCK CLOCK_THREAD_CPUTIME_ID
+#define TICKCLOCK CLOCK_MONOTONIC_RAW
 
 #include <pthread.h>

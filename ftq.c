@@ -54,6 +54,7 @@ int main(int argc, char **argv)
 	ticks start, end, ns;
 	ticks cyclestart, cycleend, cycles, base;
 	float nspercycle;
+	cpu_set_t *set;
 
 	/* default output name prefix */
 	sprintf(outname, "ftq");
@@ -127,6 +128,12 @@ int main(int argc, char **argv)
 				"ERROR: cannot output to stdout for multithread mode.\n");
 		exit(EXIT_FAILURE);
 	}
+
+	set = CPU_ALLOC(numthreads);
+	/* lock us down. */
+	CPU_SET(0, set);
+	sched_setaffinity(0, numthreads, set);
+
 	/*
 	 * set up sampling.  first, take a few bogus samples to warm up the
 	 * cache and pipeline
@@ -142,12 +149,19 @@ int main(int argc, char **argv)
 		 * enable the barrier.
 		 */
 		for (i = 0; i < numthreads; i++) {
+			CPU_SET(i, set);
 			rc = pthread_create(&threads[i], NULL, ftq_core,
 								(void *)(intptr_t) i);
 			if (rc) {
 				fprintf(stderr, "ERROR: pthread_create() failed.\n");
 				exit(EXIT_FAILURE);
 			}
+			rc = pthread_setaffinity_np(threads[i], numthreads, set);
+			if (rc) {
+				fprintf(stderr, "ERROR: pthread_setaffinity_np() failed.\n");
+				exit(EXIT_FAILURE);
+			}
+			CPU_CLR(i, set);
 		}
 
 		for (i = 0; i < numthreads; i++) {
@@ -200,8 +214,8 @@ int main(int argc, char **argv)
 			for (i = 0, base = samples[numsamples * j];
 			     i < numsamples; i++) {
 				fprintf(fp, "%f %lld\n",
-					nspercycle * (samples[i * 2] - base),
-					samples[i * 2 + 1]);
+					nspercycle * (samples[j*numsamples + i * 2] - base),
+					samples[j*numsamples + i * 2 + 1]);
 			}
 			fclose(fp);
 		}
