@@ -3,7 +3,7 @@
 
 uvlong getticks(void)
 {
-	uvlong          t;
+	uvlong t;
 
 	cycles(&t);
 	return t;

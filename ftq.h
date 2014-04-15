@@ -12,7 +12,7 @@
 
 extern unsigned long long *samples;
 extern unsigned long long interval_length;
-extern int      interval_bits;
+extern int interval_bits;
 extern unsigned long numsamples;
 
 /* ftqcore.c */

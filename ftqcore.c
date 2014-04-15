@@ -19,21 +19,20 @@
 /* samples: each sample has a timestamp and a work count. */
 unsigned long long *samples;
 unsigned long long interval_length;
-int      interval_bits = DEFAULT_BITS;
+int interval_bits = DEFAULT_BITS;
 unsigned long numsamples = DEFAULT_COUNT;
 
 /*************************************************************************
  * FTQ core: does the measurement                                        *
  *************************************************************************/
-void           *
-ftq_core(void *arg)
+void *ftq_core(void *arg)
 {
 	/* thread number, zero based. */
-	int             thread_num = (uintptr_t) arg;
-	int             i, offset;
-	int             k;
-	ticks           now, last, endinterval;
-	unsigned long   done;
+	int thread_num = (uintptr_t) arg;
+	int i, offset;
+	int k;
+	ticks now, last, endinterval;
+	unsigned long done;
 	unsigned long long count;
 
 	offset = thread_num * numsamples * 2;
@@ -103,4 +102,3 @@ ftq_core(void *arg)
 
 	return NULL;
 }
-

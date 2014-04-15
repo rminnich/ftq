@@ -18,53 +18,51 @@ uvlong getticks(void);
 /**
  * main()
  */
-int 
-main(int argc, char **argv)
+int main(int argc, char **argv)
 {
 	/* local variables */
-	char            fname_times[1024], fname_counts[1024], buf[32],
-	                outname[255];
-	int             i, j;
-	int             numthreads = 1;
-	int             fp;
-	int             use_stdout = 0;
-	int		wired = -1;
-	int		pri = 0;
+	char fname_times[1024], fname_counts[1024], buf[32], outname[255];
+	int i, j;
+	int numthreads = 1;
+	int fp;
+	int use_stdout = 0;
+	int wired = -1;
+	int pri = 0;
 
 	/* default output name prefix */
 	sprintf(outname, "ftq");
 
 	ARGBEGIN {
-		case 's':
-			use_stdout = 1;
-			break;
-		case 'o':
-			{
-				char           *tmp = ARGF();
-				if (tmp == nil)
-					usage(argv0);
-				sprintf(outname, "%s", tmp);
-			}
-			break;
-		case 'i':
-			interval_bits = atoi(ARGF());
-			break;
-		case 'n':
-			numsamples = atoi(ARGF());
-			break;
-		case 'p':
-			pri = atoi(ARGF());
-			break;
-		case 'w':
-			wired = atoi(ARGF());
-			break;
-		case 'h':
-		default:
-			usage(argv0);
-	} ARGEND
-
-	/* sanity check */
-	if (numsamples > MAX_SAMPLES) {
+case 's':
+		use_stdout = 1;
+		break;
+case 'o':
+		{
+			char *tmp = ARGF();
+			if (tmp == nil)
+				usage(argv0);
+			sprintf(outname, "%s", tmp);
+		}
+		break;
+case 'i':
+		interval_bits = atoi(ARGF());
+		break;
+case 'n':
+		numsamples = atoi(ARGF());
+		break;
+case 'p':
+		pri = atoi(ARGF());
+		break;
+case 'w':
+		wired = atoi(ARGF());
+		break;
+case 'h':
+default:
+		usage(argv0);
+	}
+	ARGEND
+		/* sanity check */
+		if (numsamples > MAX_SAMPLES) {
 		fprintf(stderr, "WARNING: sample count exceeds maximum.\n");
 		fprintf(stderr, "         setting count to maximum.\n");
 		numsamples = MAX_SAMPLES;
@@ -75,7 +73,7 @@ main(int argc, char **argv)
 
 	if (interval_bits > MAX_BITS || interval_bits < MIN_BITS) {
 		fprintf(stderr, "WARNING: interval bits invalid.  set to %d.\n",
-			MAX_BITS);
+				MAX_BITS);
 		interval_bits = MAX_BITS;
 	}
 	if (use_threads == 1 && numthreads < 2) {
@@ -83,7 +81,8 @@ main(int argc, char **argv)
 		exit(EXIT_FAILURE);
 	}
 	if (use_threads == 1 && use_stdout == 1) {
-		fprintf(stderr, "ERROR: cannot output to stdout for multithread mode.\n");
+		fprintf(stderr,
+				"ERROR: cannot output to stdout for multithread mode.\n");
 		exit(EXIT_FAILURE);
 	}
 	/*
@@ -91,15 +90,15 @@ main(int argc, char **argv)
 	 * cache and pipeline
 	 */
 	interval_length = 1 << interval_bits;
-	
+
 #ifdef Plan9
-	if(pri || (wired > -1)) {
+	if (pri || (wired > -1)) {
 		int me = getpid();
 		char *name = smprint("/proc/%d/ctl", me);
 		int fd = open(name, ORDWR);
 		char *cmd;
 		int amt;
-		assert (fd > 0);
+		assert(fd > 0);
 		if (wired > -1) {
 			print("Wired to %d\n", wired);
 			cmd = smprint("wired %d\n", wired);
@@ -112,7 +111,7 @@ main(int argc, char **argv)
 			cmd = smprint("fixedpri %d\n", pri);
 			amt = write(fd, cmd, strlen(cmd));
 			assert(amt >= strlen(cmd));
-		}		
+		}
 	}
 #endif /* Plan 9 */
 
@@ -122,7 +121,8 @@ main(int argc, char **argv)
 		assert(threads != NULL);
 
 		for (i = 0; i < numthreads; i++) {
-			rc = pthread_create(&threads[i], NULL, ftq_core, (void *) (intptr_t) i);
+			rc = pthread_create(&threads[i], NULL, ftq_core,
+								(void *)(intptr_t) i);
 			if (rc) {
 				fprintf(stderr, "ERROR: pthread_create() failed.\n");
 				exit(EXIT_FAILURE);
@@ -138,7 +138,7 @@ main(int argc, char **argv)
 		}
 
 		free(threads);
-#endif				/* _WITH_PTHREADS_ */
+#endif /* _WITH_PTHREADS_ */
 	} else {
 		ftq_core(0);
 	}
@@ -193,5 +193,3 @@ main(int argc, char **argv)
 
 	exit(EXIT_SUCCESS);
 }
-
-

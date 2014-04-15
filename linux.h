@@ -20,5 +20,3 @@
 #include "cycle.h"
 
 #include <pthread.h>
-
-

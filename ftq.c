@@ -16,37 +16,35 @@
  */
 #include "ftq.h"
 
-void 
-usage(char *av0)
+void usage(char *av0)
 {
-	fprintf(stderr, "usage: %s [-t threads] [-n samples] [-i bits] [-h] [-o outname] [-s]\n",
-		av0);
+	fprintf(stderr,
+			"usage: %s [-t threads] [-n samples] [-i bits] [-h] [-o outname] [-s]\n",
+			av0);
 	exit(EXIT_FAILURE);
 }
 
-int 
-main(int argc, char **argv)
+int main(int argc, char **argv)
 {
 	/* local variables */
-	char            fname_times[1024], fname_counts[1024], buf[32],
-	                outname[255];
-	int             i, j;
-	int             numthreads = 1, use_threads = 0;
-	int             fp;
-	int             use_stdout = 0;
-	int             rc;
-	pthread_t      *threads;
+	char fname_times[1024], fname_counts[1024], buf[32], outname[255];
+	int i, j;
+	int numthreads = 1, use_threads = 0;
+	int fp;
+	int use_stdout = 0;
+	int rc;
+	pthread_t *threads;
 
 	/* default output name prefix */
 	sprintf(outname, "ftq");
 
 	/*
-         * getopt_long to parse command line options.
-         * basically the code from the getopt man page.
-         */
+	 * getopt_long to parse command line options.
+	 * basically the code from the getopt man page.
+	 */
 	while (1) {
-		int             c;
-		int             option_index = 0;
+		int c;
+		int option_index = 0;
 		static struct option long_options[] = {
 			{"help", 0, 0, 'h'},
 			{"numsamples", 0, 0, 'n'},
@@ -57,32 +55,31 @@ main(int argc, char **argv)
 			{0, 0, 0, 0}
 		};
 
-		c = getopt_long(argc, argv, "n:hsi:o:t:",
-				long_options, &option_index);
+		c = getopt_long(argc, argv, "n:hsi:o:t:", long_options, &option_index);
 		if (c == -1)
 			break;
 
 		switch (c) {
-		case 't':
-			numthreads = atoi(optarg);
-			use_threads = 1;
-			break;
-		case 's':
-			use_stdout = 1;
-			break;
-		case 'o':
-			sprintf(outname, "%s", optarg);
-			break;
-		case 'i':
-			interval_bits = atoi(optarg);
-			break;
-		case 'n':
-			numsamples = atoi(optarg);
-			break;
-		case 'h':
-		default:
-			usage(argv[0]);
-			break;
+			case 't':
+				numthreads = atoi(optarg);
+				use_threads = 1;
+				break;
+			case 's':
+				use_stdout = 1;
+				break;
+			case 'o':
+				sprintf(outname, "%s", optarg);
+				break;
+			case 'i':
+				interval_bits = atoi(optarg);
+				break;
+			case 'n':
+				numsamples = atoi(optarg);
+				break;
+			case 'h':
+			default:
+				usage(argv[0]);
+				break;
 		}
 	}
 
@@ -98,7 +95,7 @@ main(int argc, char **argv)
 
 	if (interval_bits > MAX_BITS || interval_bits < MIN_BITS) {
 		fprintf(stderr, "WARNING: interval bits invalid.  set to %d.\n",
-			MAX_BITS);
+				MAX_BITS);
 		interval_bits = MAX_BITS;
 	}
 	if (use_threads == 1 && numthreads < 2) {
@@ -106,7 +103,8 @@ main(int argc, char **argv)
 		exit(EXIT_FAILURE);
 	}
 	if (use_threads == 1 && use_stdout == 1) {
-		fprintf(stderr, "ERROR: cannot output to stdout for multithread mode.\n");
+		fprintf(stderr,
+				"ERROR: cannot output to stdout for multithread mode.\n");
 		exit(EXIT_FAILURE);
 	}
 	/*
@@ -114,13 +112,14 @@ main(int argc, char **argv)
 	 * cache and pipeline
 	 */
 	interval_length = 1 << interval_bits;
-	
+
 	if (use_threads == 1) {
 		threads = malloc(sizeof(pthread_t) * numthreads);
 		assert(threads != NULL);
 
 		for (i = 0; i < numthreads; i++) {
-			rc = pthread_create(&threads[i], NULL, ftq_core, (void *) (intptr_t) i);
+			rc = pthread_create(&threads[i], NULL, ftq_core,
+								(void *)(intptr_t) i);
 			if (rc) {
 				fprintf(stderr, "ERROR: pthread_create() failed.\n");
 				exit(EXIT_FAILURE);
