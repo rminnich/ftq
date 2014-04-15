@@ -1,49 +1,20 @@
-/*
- * includes and platform specific defines for setting up the code moved
- * here to clean up the core of the code.
- */
 #ifndef __FTQ_H__
 #define __FTQ_H__
 
+/** defaults **/
+#define MAX_SAMPLES    2000000
+#define DEFAULT_COUNT  524288
+#define DEFAULT_BITS   20
+#define MAX_BITS       30
+#define MIN_BITS       3
 
-#ifdef Plan9
-#include <u.h>
-#include <libc.h>
-
-#define intptr_t int *
-#define NULL 0
-typedef long long ticks;
-#define sprintf sprint
-#define fprintf fprint
-#define printf print
-#define stderr 2
-#define stdout 1
-#define exit exits
-#define EXIT_FAILURE "failure"
-#define EXIT_SUCCESS "success"
-
-uvlong getticks(void);
-
-#else				/* Plan9 */
-#include <assert.h>
-#include <stdio.h>
-#include <fcntl.h>
-#include <string.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <getopt.h>
-/*
- * use cycle timers from FFTW3 (http://www.fftw.org/).  this defines a
- * "ticks" typedef, usually unsigned long long, that is used to store
- * timings.  currently this code will NOT work if the ticks typedef is
- * something other than an unsigned long long.
+/**
+ * Work grain, which is now fixed. 
  */
-#include "cycle.h"
-#endif				/* Plan9 */
+#define ITERCOUNT      32
 
-#ifdef _WITH_PTHREADS_
-#include <pthread.h>
-#endif
-
-
+extern unsigned long long *samples;
+extern unsigned long long interval_length;
+extern int      interval_bits;
+extern unsigned long numsamples;
 #endif				/* __FTQ_H__ */

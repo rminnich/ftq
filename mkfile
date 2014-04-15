@@ -4,7 +4,8 @@ TARG=ftq15\
 	ftq31\
 	ftq63\
 
-default:V: all
+default:V: # all
+	   echo "broken. you get to fix it. Assuming anyone cares about Plan 9, ever again"
 
 OFILES=getticks.$O
 

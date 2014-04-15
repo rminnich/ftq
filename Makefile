@@ -4,11 +4,8 @@ CFLAGS = -Wall -O0
 LIBS =
 LDFLAGS = $(USER_OPT)
 
-all: basic 
+ftq:
+	cc $(CFLAGS) -Wall ftq.c ftqcore.c -o ftq
 
-basic:
-	cc $(CFLAGS) -Wall ftq.c -o ftq
-threads:
-	cc $(CFLAGS) -funroll-loops ftq.c -D_WITH_PTHREADS_ -o t_ftq -lpthread
 clean:
-	rm -f ftq.o ftq ftq15 ftq31 ftq63 t_ftq*
+	rm -f *.o t_ftq ftq

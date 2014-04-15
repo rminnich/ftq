@@ -1,29 +1,23 @@
+#include <u.h>
+#include <libc.h>
+
+#define intptr_t int *
+#define NULL 0
+typedef long long ticks;
+#define sprintf sprint
+#define fprintf fprint
+#define printf print
+#define stderr 2
+#define stdout 1
+#define exit exits
+#define EXIT_FAILURE "failure"
+#define EXIT_SUCCESS "success"
+
+uvlong getticks(void);
+
 /**
- * ftq.c : Fixed Time Quantum microbenchmark
- *
- * Written by Matthew Sottile (matt@cs.uoregon.edu)
- *
- * This is a complete rewrite of the original tscbase code by
- * Ron and Matt, in order to use a better set of portable timers,
- * and more flexible argument handling and parameterization.
- *
- * 12/30/2007 : Updated to add pthreads support for FTQ execution on
- *              shared memory multiprocessors (multicore and SMPs).
- *              Also, removed unused TAU support.
- *
- * Licensed under the terms of the GNU Public Licence.  See LICENCE_GPL
- * for details.
+ * main()
  */
-#include "ftq.h"
-
-void 
-usage(char *av0)
-{
-	fprintf(stderr, "usage: %s [-t threads] [-n samples] [-i bits] [-h] [-o outname] [-s]\n",
-		av0);
-	exit(EXIT_FAILURE);
-}
-
 int 
 main(int argc, char **argv)
 {
@@ -31,60 +25,43 @@ main(int argc, char **argv)
 	char            fname_times[1024], fname_counts[1024], buf[32],
 	                outname[255];
 	int             i, j;
-	int             numthreads = 1, use_threads = 0;
+	int             numthreads = 1;
 	int             fp;
 	int             use_stdout = 0;
-	int             rc;
-	pthread_t      *threads;
+	int		wired = -1;
+	int		pri = 0;
 
 	/* default output name prefix */
 	sprintf(outname, "ftq");
 
-	/*
-         * getopt_long to parse command line options.
-         * basically the code from the getopt man page.
-         */
-	while (1) {
-		int             c;
-		int             option_index = 0;
-		static struct option long_options[] = {
-			{"help", 0, 0, 'h'},
-			{"numsamples", 0, 0, 'n'},
-			{"interval", 0, 0, 'i'},
-			{"outname", 0, 0, 'o'},
-			{"stdout", 0, 0, 's'},
-			{"threads", 0, 0, 't'},
-			{0, 0, 0, 0}
-		};
-
-		c = getopt_long(argc, argv, "n:hsi:o:t:",
-				long_options, &option_index);
-		if (c == -1)
-			break;
-
-		switch (c) {
-		case 't':
-			numthreads = atoi(optarg);
-			use_threads = 1;
-			break;
+	ARGBEGIN {
 		case 's':
 			use_stdout = 1;
 			break;
 		case 'o':
-			sprintf(outname, "%s", optarg);
+			{
+				char           *tmp = ARGF();
+				if (tmp == nil)
+					usage(argv0);
+				sprintf(outname, "%s", tmp);
+			}
 			break;
 		case 'i':
-			interval_bits = atoi(optarg);
+			interval_bits = atoi(ARGF());
 			break;
 		case 'n':
-			numsamples = atoi(optarg);
+			numsamples = atoi(ARGF());
+			break;
+		case 'p':
+			pri = atoi(ARGF());
+			break;
+		case 'w':
+			wired = atoi(ARGF());
 			break;
 		case 'h':
 		default:
-			usage(argv[0]);
-			break;
-		}
-	}
+			usage(argv0);
+	} ARGEND
 
 	/* sanity check */
 	if (numsamples > MAX_SAMPLES) {
@@ -115,7 +92,32 @@ main(int argc, char **argv)
 	 */
 	interval_length = 1 << interval_bits;
 	
+#ifdef Plan9
+	if(pri || (wired > -1)) {
+		int me = getpid();
+		char *name = smprint("/proc/%d/ctl", me);
+		int fd = open(name, ORDWR);
+		char *cmd;
+		int amt;
+		assert (fd > 0);
+		if (wired > -1) {
+			print("Wired to %d\n", wired);
+			cmd = smprint("wired %d\n", wired);
+			amt = write(fd, cmd, strlen(cmd));
+			assert(amt >= strlen(cmd));
+		}
+
+		if (pri) {
+			print("Pri to %d\n", pri);
+			cmd = smprint("fixedpri %d\n", pri);
+			amt = write(fd, cmd, strlen(cmd));
+			assert(amt >= strlen(cmd));
+		}		
+	}
+#endif /* Plan 9 */
+
 	if (use_threads == 1) {
+#ifdef _WITH_PTHREADS_
 		threads = malloc(sizeof(pthread_t) * numthreads);
 		assert(threads != NULL);
 
@@ -135,6 +137,8 @@ main(int argc, char **argv)
 			}
 		}
 
+		free(threads);
+#endif				/* _WITH_PTHREADS_ */
 	} else {
 		ftq_core(0);
 	}
@@ -149,7 +153,11 @@ main(int argc, char **argv)
 			sprintf(fname_times, "%s_%d_times.dat", outname, j);
 			sprintf(fname_counts, "%s_%d_counts.dat", outname, j);
 
+#ifdef Plan9
+			fp = create(fname_times, OWRITE, 700);
+#else
 			fp = open(fname_times, O_CREAT | O_TRUNC | O_WRONLY, 0644);
+#endif
 			if (fp < 0) {
 				perror("can not create file");
 				exit(EXIT_FAILURE);
@@ -160,7 +168,11 @@ main(int argc, char **argv)
 			}
 			close(fp);
 
+#ifdef Plan9
+			fp = create(fname_counts, OWRITE, 700);
+#else
 			fp = open(fname_counts, O_CREAT | O_TRUNC | O_WRONLY, 0644);
+#endif
 			if (fp < 0) {
 				perror("can not create file");
 				exit(EXIT_FAILURE);
@@ -175,7 +187,11 @@ main(int argc, char **argv)
 
 	free(samples);
 
+#ifdef _WITH_PTHREADS_
 	pthread_exit(NULL);
+#endif
 
 	exit(EXIT_SUCCESS);
 }
+
+
