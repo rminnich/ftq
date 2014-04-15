@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <time.h>
-
+#include <sys/utsname.h>
 /* do what is needed and return the time resolution in nanoseconds. */
 int
 initticks()
@@ -33,6 +33,34 @@ nsec()
 	return val;
 }
 
+/* do the best you can. */
+void osinfo(FILE *f)
+{
+	struct utsname utsname;
+	char buf[8192];
+	if (uname(&utsname) == 0) {
+		fprintf(f, "# %s\n", utsname.sysname);
+		fprintf(f, "# %s\n", utsname.nodename);
+		fprintf(f, "# %s\n", utsname.release);
+		fprintf(f, "# %s\n", utsname.version);
+		fprintf(f, "# %s\n", utsname.machine);
+		/* who writes this stuff? */
+#if _UTSNAME_DOMAIN_LENGTH - 0
+# ifdef __USE_GNU
+		fprintf(f, "# %s\n", utsname.domainname);
+# else
+		fprintf(f, "# %s\n", utsname.__domainname);
+# endif
+#endif
+	}
+
+	FILE *cpu = fopen("/proc/cpuinfo", "r");
+	if (! cpu)
+		return;
+	/* note: \n comes for free. */
+	while (fgets(buf, sizeof(buf), cpu))
+		fprintf(f, "# %s", buf);
+}
 
 
 

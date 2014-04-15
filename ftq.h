@@ -19,4 +19,6 @@ extern unsigned long numsamples;
 void *ftq_core(void *arg);
 
 /* must be provided by OS code */
+/* Sorry, Plan 9; don't know how to manage FILE yet */
 ticks nsec(void);
+void osinfo(FILE *f);

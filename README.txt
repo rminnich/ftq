@@ -25,6 +25,8 @@ Makefile
 ftq.c
 ftqcore.c
 ftq.h
+linux.c
+linux.h
 README.txt
 
 The rest are either experimental or related to the Plan9 port of the code.
@@ -188,4 +190,19 @@ octave:5> plot(testrun_counts)
 In the above sequence of commands, we loaded the data into the Octave
 array "testrun_counts", looked at it's mean, variance, and standard
 deviation.  Finally, we plotted it.  Easy, eh?
+
+Plotting power spectra the easy way.
+
+Install GNU fortran (sorry!)
+
+octave
+pkg install -forge control #one time
+pkg install -forge general # one time
+pkg install -forge signal # one time
+
+pkg load signal # every time
+x=load("ftq output file")
+# Note the frequency in the comments at the front
+# in this case it's 790905
+pwelch(x(:,2),[],[],[],790905)
 

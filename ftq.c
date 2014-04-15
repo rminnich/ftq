@@ -7,6 +7,13 @@
  * Ron and Matt, in order to use a better set of portable timers,
  * and more flexible argument handling and parameterization.
  *
+ * 4/15/2014 : Major rewrite; remove pthreads ifdef. Separate out OS bits. 
+ *             use --include to pull in whatever OS defines you are using.
+ *             New file format with time (in ns) and count in one place;
+ *             comments at front are self describing, including sample
+ *             frequency. Spits out octave commands to run as well.
+ *             Puts cpu info in there as well as uname info. 
+ *             This makes the files more useful as time goes by.
  * 12/30/2007 : Updated to add pthreads support for FTQ execution on
  *              shared memory multiprocessors (multicore and SMPs).
  *              Also, removed unused TAU support.
@@ -160,7 +167,13 @@ int main(int argc, char **argv)
 	nspercycle = (1.0 * ns) / cycles;
 	fprintf(stderr, "Cycles per ns. is %f; nspercycle is %f\n", (1.0*cycles)/ns,
 		nspercycle);
+	fprintf(stderr, "Sample frequency is %f\n", nspercycle * interval_length);
+	printf("# Frequency %f\n", nspercycle * interval_length);
+	printf("# octave: pkg load signal");
+	printf("# x = load(<file name>)\n");
+	printf("# pwelch(x(:,2),[],[],[],%f)\n", nspercycle * interval_length);
 	if (use_stdout == 1) {
+		osinfo(stdout);
 		for (i = 0, base = samples[0]; i < numsamples; i++) {
 			fprintf(stdout, "%f %lld\n",
 				nspercycle * (samples[i * 2] - base), samples[i * 2 + 1]);
