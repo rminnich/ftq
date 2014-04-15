@@ -9,6 +9,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <string.h>
+#include <time.h>
 #include "cycle.h"
 
 /*
@@ -18,5 +19,8 @@
  * something other than an unsigned long long.
  */
 #include "cycle.h"
+
+/* what clock do we use for the OS timer? */
+#define TICKCLOCK CLOCK_THREAD_CPUTIME_ID
 
 #include <pthread.h>

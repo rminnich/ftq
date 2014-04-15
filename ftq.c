@@ -34,6 +34,9 @@ int main(int argc, char **argv)
 	int use_stdout = 0;
 	int rc;
 	pthread_t *threads;
+	ticks start, end, ns;
+	ticks cyclestart, cycleend, cycles, base;
+	float nspercycle;
 
 	/* default output name prefix */
 	sprintf(outname, "ftq");
@@ -116,7 +119,11 @@ int main(int argc, char **argv)
 	if (use_threads == 1) {
 		threads = malloc(sizeof(pthread_t) * numthreads);
 		assert(threads != NULL);
-
+		start = nsec();
+		cyclestart = getticks();
+		/* TODO: put a barrier in place, and threads don't start until we
+		 * enable the barrier.
+		 */
 		for (i = 0; i < numthreads; i++) {
 			rc = pthread_create(&threads[i], NULL, ftq_core,
 								(void *)(intptr_t) i);
@@ -133,14 +140,30 @@ int main(int argc, char **argv)
 				exit(EXIT_FAILURE);
 			}
 		}
+		cycleend = getticks();
+		end = nsec();
 
 	} else {
+		start = nsec();
+		cyclestart = getticks();
 		ftq_core(0);
+		cycleend = getticks();
+		end = nsec();
 	}
 
+	/* We now have the total ns used, and the total ticks used. */
+	ns = end - start;
+	cycles = cycleend - cyclestart;
+	fprintf(stderr, "Start %lld end %lld elapsed %lld\n", start, end, ns);
+	fprintf(stderr, "cyclestart %lld cycleend %lld elapsed %lld\n",
+		cyclestart, cycleend, cycles);
+	nspercycle = (1.0 * ns) / cycles;
+	fprintf(stderr, "Cycles per ns. is %f; nspercycle is %f\n", (1.0*cycles)/ns,
+		nspercycle);
 	if (use_stdout == 1) {
-		for (i = 0; i < numsamples; i++) {
-			fprintf(stdout, "%lld %lld\n", samples[i * 2], samples[i * 2 + 1]);
+		for (i = 0, base = samples[0]; i < numsamples; i++) {
+			fprintf(stdout, "%f %lld\n",
+				nspercycle * (samples[i * 2] - base), samples[i * 2 + 1]);
 		}
 	} else {
 
@@ -153,8 +176,9 @@ int main(int argc, char **argv)
 				perror("can not create file");
 				exit(EXIT_FAILURE);
 			}
-			for (i = 0; i < numsamples; i++) {
-				sprintf(buf, "%lld\n", samples[(i * 2) + (numsamples * j)]);
+			for (i = 0, base = samples[numsamples * j];
+			     i < numsamples; i++) {
+				sprintf(buf, "%f\n", nspercycle * (samples[(i * 2) + (numsamples * j)]-base));
 				write(fp, buf, strlen(buf));
 			}
 			close(fp);

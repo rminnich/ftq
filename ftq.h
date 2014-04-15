@@ -17,3 +17,6 @@ extern unsigned long numsamples;
 
 /* ftqcore.c */
 void *ftq_core(void *arg);
+
+/* must be provided by OS code */
+ticks nsec(void);
