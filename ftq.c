@@ -38,7 +38,7 @@ void header(FILE *f, float nspercycle, int core)
 	fprintf(f,"# x = load(<file name>)\n");
 	fprintf(f,"# pwelch(x(:,2),[],[],[],%f)\n", nspercycle * interval_length);
 	fprintf(f,"# core %d\n", core);
-	osinfo(f);
+	osinfo(f, core);
 }
 
 int main(int argc, char **argv)

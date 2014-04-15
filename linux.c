@@ -34,8 +34,9 @@ nsec()
 }
 
 /* do the best you can. */
-void osinfo(FILE *f)
+void osinfo(FILE *f, int core)
 {
+	int readingcore = -1;
 	struct utsname utsname;
 	char buf[8192];
 	if (uname(&utsname) == 0) {
@@ -58,8 +59,17 @@ void osinfo(FILE *f)
 	if (! cpu)
 		return;
 	/* note: \n comes for free. */
-	while (fgets(buf, sizeof(buf), cpu))
+	/* skip to our core. */
+	while (fgets(buf, sizeof(buf), cpu)) {
+		if (! strncmp("processor", buf, strlen("processor"))) {
+			readingcore++;
+		}
+		if (readingcore > core)
+			break;
+		if (core != readingcore)
+			continue;
 		fprintf(f, "# %s", buf);
+	}
 }
 
 
