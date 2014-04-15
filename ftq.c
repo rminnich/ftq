@@ -31,13 +31,23 @@ void usage(char *av0)
 	exit(EXIT_FAILURE);
 }
 
+void header(FILE *f, float nspercycle, int core)
+{
+	fprintf(f,"# Frequency %f\n", nspercycle * interval_length);
+	fprintf(f,"# octave: pkg load signal");
+	fprintf(f,"# x = load(<file name>)\n");
+	fprintf(f,"# pwelch(x(:,2),[],[],[],%f)\n", nspercycle * interval_length);
+	fprintf(f,"# core %d\n", core);
+	osinfo(f);
+}
+
 int main(int argc, char **argv)
 {
 	/* local variables */
-	char fname_times[1024], fname_counts[1024], buf[32], outname[255];
+	static char fname[8192], outname[255];
 	int i, j;
 	int numthreads = 1, use_threads = 0;
-	int fp;
+	FILE *fp;
 	int use_stdout = 0;
 	int rc;
 	pthread_t *threads;
@@ -161,6 +171,9 @@ int main(int argc, char **argv)
 	/* We now have the total ns used, and the total ticks used. */
 	ns = end - start;
 	cycles = cycleend - cyclestart;
+	/* TODO: move IO to linux.c, assuming we ever need Plan 9 again.
+	 * but IFDEF is NOT ALLOWED
+	 */
 	fprintf(stderr, "Start %lld end %lld elapsed %lld\n", start, end, ns);
 	fprintf(stderr, "cyclestart %lld cycleend %lld elapsed %lld\n",
 		cyclestart, cycleend, cycles);
@@ -168,12 +181,8 @@ int main(int argc, char **argv)
 	fprintf(stderr, "Cycles per ns. is %f; nspercycle is %f\n", (1.0*cycles)/ns,
 		nspercycle);
 	fprintf(stderr, "Sample frequency is %f\n", nspercycle * interval_length);
-	printf("# Frequency %f\n", nspercycle * interval_length);
-	printf("# octave: pkg load signal");
-	printf("# x = load(<file name>)\n");
-	printf("# pwelch(x(:,2),[],[],[],%f)\n", nspercycle * interval_length);
 	if (use_stdout == 1) {
-		osinfo(stdout);
+		header(stdout, nspercycle, 0);
 		for (i = 0, base = samples[0]; i < numsamples; i++) {
 			fprintf(stdout, "%f %lld\n",
 				nspercycle * (samples[i * 2] - base), samples[i * 2 + 1]);
@@ -181,35 +190,22 @@ int main(int argc, char **argv)
 	} else {
 
 		for (j = 0; j < numthreads; j++) {
-			sprintf(fname_times, "%s_%d_times.dat", outname, j);
-			sprintf(fname_counts, "%s_%d_counts.dat", outname, j);
-
-			fp = open(fname_times, O_CREAT | O_TRUNC | O_WRONLY, 0644);
+			sprintf(fname, "%s_%d.dat", outname, j);
+			fp = fopen(fname, "w");
 			if (fp < 0) {
 				perror("can not create file");
 				exit(EXIT_FAILURE);
 			}
+			header(fp, nspercycle, j);
 			for (i = 0, base = samples[numsamples * j];
 			     i < numsamples; i++) {
-				sprintf(buf, "%f\n", nspercycle * (samples[(i * 2) + (numsamples * j)]-base));
-				write(fp, buf, strlen(buf));
+				fprintf(fp, "%f %lld\n",
+					nspercycle * (samples[i * 2] - base),
+					samples[i * 2 + 1]);
 			}
-			close(fp);
-
-			fp = open(fname_counts, O_CREAT | O_TRUNC | O_WRONLY, 0644);
-			if (fp < 0) {
-				perror("can not create file");
-				exit(EXIT_FAILURE);
-			}
-			for (i = 0; i < numsamples; i++) {
-				sprintf(buf, "%lld\n", samples[i * 2 + 1 + (numsamples * j)]);
-				write(fp, buf, strlen(buf));
-			}
-			close(fp);
+			fclose(fp);
 		}
 	}
-
-	free(samples);
 
 	pthread_exit(NULL);
 
