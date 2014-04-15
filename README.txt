@@ -14,7 +14,7 @@ Both of these should be available at some point in downloadable form from
 the chamatools web page.  For the time being, the following is a brief
 summary of the code, what it does, and how you should run it.
 
-For further information, contact Matt Sottile at matt@cs.uoregon.edu.
+For further information, contact Matt Sottile at mjsottile (gmail) or rminnich (gmail)
 
 0.  Important Files
 -------------------
@@ -23,10 +23,19 @@ In this directory, the only files that matter are:
 
 Makefile
 ftq.c
+ftqcore.c
 ftq.h
 README.txt
 
 The rest are either experimental or related to the Plan9 port of the code.
+ftqcore.c is designed to be linked to and called from all kinds of code.
+ftq.c is the pthreads version. It's no longer possible to build without
+pthreads; all the glibc runtimes initialize pthreads anyway so there's no
+point in excluding it.
+
+Plan 9 support is deprecated because nobody cared, and the default Plan 9 timers
+still suck.
+
 The ftq_omp.c code is an experimental OpenMP-based FTQ contributed by
 Brent Gorda from LLNL.
 
@@ -74,15 +83,11 @@ FTQ is simple to build.  It has been tested on MacOSX, Linux, and even at one
 time under Windows XP via cygwin (note: Windows hasn't been tested in a long
 time).  There is no configuration step at the present time, although
 it is likely that one may emerge if the FTQ configuration options get
-sophisticated enough.  In the meantime, if one just says:
+sophisticated enough (over Ron's dead body).  In the meantime, if one just says:
 
 % make
 
-You should observe 4 executables being created.  They are ftq, ftq15, ftq31,
-and ftq63.  Each of these represents increasing granularity work quanta
-used for sampling.  For example, ftq uses a single integer increment 
-operation as the work quantum, while ftq31 uses 16 increments followed by
-15 decrements (effectively equivalent to the single ftq count++).  The
+Creates ftq. Per iteration, FTQ does a small kernel, not just one operation. The
 reason for this is that one will observe, especially for tiny work
 quanta, jitter in the data due to the fact that the majority (approx 70-80%)
 of the instructions executed per work quantum are actually branch and
@@ -93,17 +98,6 @@ work quantum instructions to control flow and conditional structures becomes
 more even, and the fluctuations within the data begin to be due to
 interference external to FTQ itself (other than apparent cache related, high
 frequency low level perturbations).  
-
-If you would like a version of FTQ that runs in a multicore or SMP
-environment where each thread runs the core of the benchmark (resulting
-in multiple files when run, one data set per thread), you can say:
-
-% make threads
-
-This yields a similar set of executables, except with t_ as a prefix on the
-executable name, indicating a pthreads version.  It is not recommended that
-you use the threaded versions on a single core.  In that case, just use
-the non-threaded FTQ.
 
 3. Running FTQ
 --------------
@@ -121,11 +115,12 @@ The parameters are as follows:
   -o : Prefix for output data files
   -i : Bits in sampling interval limits
   -n : Number of samples to take
+  -t : number of threads. Default 1.
   -h : Usage
 
 Let's consider a simple run like this:
 
-% ./ftq63 -o testrun -i 20 -n 1000
+% ./ftq -o testrun -i 20 -n 1000
 
 What does this produce?  If we look at the current directory, we should
 see two new files: testrun_counts.dat and testrun_times.dat.  These are the

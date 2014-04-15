@@ -29,7 +29,7 @@ void           *
 ftq_core(void *arg)
 {
 	/* thread number, zero based. */
-	int             thread_num = (unsigned int) arg;
+	int             thread_num = (uintptr_t) arg;
 	int             i, offset;
 	int             k;
 	ticks           now, last, endinterval;

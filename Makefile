@@ -4,8 +4,10 @@ CFLAGS = -Wall -O0
 LIBS =
 LDFLAGS = $(USER_OPT)
 
-ftq:
-	cc $(CFLAGS) -Wall ftq.c ftqcore.c -o ftq
+all: linux
+
+linux:
+	cc $(CFLAGS) --include linux.h -Wall ftq.c ftqcore.c -o ftq -lpthread
 
 clean:
 	rm -f *.o t_ftq ftq
