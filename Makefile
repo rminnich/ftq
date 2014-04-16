@@ -7,7 +7,7 @@ LDFLAGS = $(USER_OPT)
 all: linux
 
 linux:
-	cc $(CFLAGS) --include linux.h -Wall ftq.c ftqcore.c linux.c -o ftq -lpthread
+	cc $(CFLAGS) --include linux.h -Wall ftq.c ftqcore.c linux.c -o ftq -lpthread -lrt
 
 clean:
 	rm -f *.o t_ftq ftq

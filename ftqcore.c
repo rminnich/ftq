@@ -21,6 +21,7 @@ unsigned long long *samples;
 unsigned long long interval_length;
 int interval_bits = DEFAULT_BITS;
 unsigned long numsamples = DEFAULT_COUNT;
+int hounds = 0;
 
 /*************************************************************************
  * FTQ core: does the measurement                                        *
@@ -39,6 +40,7 @@ void *ftq_core(void *arg)
 	done = 0;
 	count = 0;
 
+	while (!hounds) ;
 	last = getticks();
 	endinterval = (last + interval_length) & (~(interval_length - 1));
 

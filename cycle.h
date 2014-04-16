@@ -180,8 +180,7 @@ static __inline ticks getticks(void)
 	ticks ret;
 
 	__asm {
-	RDTSC mov ret.HighPart, edx mov ret.LowPart, eax}
-	return ret;
+	RDTSC mov ret.HighPart, edx mov ret.LowPart, eax} return ret;
 }
 
 static __inline double elapsed(ticks t1, ticks t0)

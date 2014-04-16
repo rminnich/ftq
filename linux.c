@@ -2,8 +2,7 @@
 #include <time.h>
 #include <sys/utsname.h>
 /* do what is needed and return the time resolution in nanoseconds. */
-int
-initticks()
+int initticks()
 {
 	struct timespec t;
 	int ret;
@@ -17,8 +16,7 @@ initticks()
 }
 
 /* return current time in ns as a 'tick' */
-ticks
-nsec()
+ticks nsec()
 {
 	struct timespec t;
 	int ret;
@@ -34,7 +32,7 @@ nsec()
 }
 
 /* do the best you can. */
-void osinfo(FILE *f, int core)
+void osinfo(FILE * f, int core)
 {
 	int readingcore = -1;
 	struct utsname utsname;
@@ -47,21 +45,21 @@ void osinfo(FILE *f, int core)
 		fprintf(f, "# %s\n", utsname.machine);
 		/* who writes this stuff? */
 #if _UTSNAME_DOMAIN_LENGTH - 0
-# ifdef __USE_GNU
+#ifdef __USE_GNU
 		fprintf(f, "# %s\n", utsname.domainname);
-# else
+#else
 		fprintf(f, "# %s\n", utsname.__domainname);
-# endif
+#endif
 #endif
 	}
 
 	FILE *cpu = fopen("/proc/cpuinfo", "r");
-	if (! cpu)
+	if (!cpu)
 		return;
 	/* note: \n comes for free. */
 	/* skip to our core. */
 	while (fgets(buf, sizeof(buf), cpu)) {
-		if (! strncmp("processor", buf, strlen("processor"))) {
+		if (!strncmp("processor", buf, strlen("processor"))) {
 			readingcore++;
 		}
 		if (readingcore > core)
@@ -71,7 +69,3 @@ void osinfo(FILE *f, int core)
 		fprintf(f, "# %s", buf);
 	}
 }
-
-
-
-

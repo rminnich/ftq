@@ -31,13 +31,13 @@ void usage(char *av0)
 	exit(EXIT_FAILURE);
 }
 
-void header(FILE *f, float nspercycle, int core)
+void header(FILE * f, float nspercycle, int core)
 {
-	fprintf(f,"# Frequency %f\n", nspercycle * interval_length);
-	fprintf(f,"# octave: pkg load signal");
-	fprintf(f,"# x = load(<file name>)\n");
-	fprintf(f,"# pwelch(x(:,2),[],[],[],%f)\n", nspercycle * interval_length);
-	fprintf(f,"# core %d\n", core);
+	fprintf(f, "# Frequency %f\n", nspercycle * interval_length);
+	fprintf(f, "# octave: pkg load signal");
+	fprintf(f, "# x = load(<file name>)\n");
+	fprintf(f, "# pwelch(x(:,2),[],[],[],%f)\n", nspercycle * interval_length);
+	fprintf(f, "# core %d\n", core);
 	osinfo(f, core);
 }
 
@@ -164,6 +164,8 @@ int main(int argc, char **argv)
 			CPU_CLR(i, set);
 		}
 
+		hounds = 1;
+
 		for (i = 0; i < numthreads; i++) {
 			rc = pthread_join(threads[i], NULL);
 			if (rc) {
@@ -190,16 +192,16 @@ int main(int argc, char **argv)
 	 */
 	fprintf(stderr, "Start %lld end %lld elapsed %lld\n", start, end, ns);
 	fprintf(stderr, "cyclestart %lld cycleend %lld elapsed %lld\n",
-		cyclestart, cycleend, cycles);
+			cyclestart, cycleend, cycles);
 	nspercycle = (1.0 * ns) / cycles;
-	fprintf(stderr, "Cycles per ns. is %f; nspercycle is %f\n", (1.0*cycles)/ns,
-		nspercycle);
+	fprintf(stderr, "Cycles per ns. is %f; nspercycle is %f\n",
+			(1.0 * cycles) / ns, nspercycle);
 	fprintf(stderr, "Sample frequency is %f\n", nspercycle * interval_length);
 	if (use_stdout == 1) {
 		header(stdout, nspercycle, 0);
 		for (i = 0, base = samples[0]; i < numsamples; i++) {
 			fprintf(stdout, "%f %lld\n",
-				nspercycle * (samples[i * 2] - base), samples[i * 2 + 1]);
+					nspercycle * (samples[i * 2] - base), samples[i * 2 + 1]);
 		}
 	} else {
 
@@ -211,11 +213,11 @@ int main(int argc, char **argv)
 				exit(EXIT_FAILURE);
 			}
 			header(fp, nspercycle, j);
-			for (i = 0, base = samples[numsamples * j];
-			     i < numsamples; i++) {
+			for (i = 0, base = samples[numsamples * j * 2]; i < numsamples; i++) {
 				fprintf(fp, "%f %lld\n",
-					nspercycle * (samples[j*numsamples + i * 2] - base),
-					samples[j*numsamples + i * 2 + 1]);
+						nspercycle * (samples[j * numsamples * 2 + i * 2] -
+									  base),
+						samples[j * numsamples * 2 + i * 2 + 1]);
 			}
 			fclose(fp);
 		}

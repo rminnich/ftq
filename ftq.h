@@ -14,6 +14,7 @@ extern unsigned long long *samples;
 extern unsigned long long interval_length;
 extern int interval_bits;
 extern unsigned long numsamples;
+extern int hounds;
 
 /* ftqcore.c */
 void *ftq_core(void *arg);
@@ -21,4 +22,4 @@ void *ftq_core(void *arg);
 /* must be provided by OS code */
 /* Sorry, Plan 9; don't know how to manage FILE yet */
 ticks nsec(void);
-void osinfo(FILE *f, int core);
+void osinfo(FILE * f, int core);
