@@ -132,7 +132,9 @@ int main(int argc, char **argv)
 	set = CPU_ALLOC(numthreads);
 	/* lock us down. */
 	CPU_SET(0, set);
+#ifndef ros
 	sched_setaffinity(0, numthreads, set);
+#endif
 
 	/*
 	 * set up sampling.  first, take a few bogus samples to warm up the
@@ -171,11 +173,13 @@ int main(int argc, char **argv)
 				fprintf(stderr, "ERROR: pthread_create() failed.\n");
 				exit(EXIT_FAILURE);
 			}
+#ifndef ros
 			rc = pthread_setaffinity_np(threads[i], numthreads, set);
 			if (rc) {
 				fprintf(stderr, "ERROR: pthread_setaffinity_np() failed.\n");
 				exit(EXIT_FAILURE);
 			}
+#endif
 			CPU_CLR(i, set);
 		}
 
