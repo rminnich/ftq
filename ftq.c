@@ -54,7 +54,6 @@ int main(int argc, char **argv)
 	ticks start, end, ns;
 	ticks cyclestart, cycleend, cycles, base;
 	float nspercycle;
-	cpu_set_t *set;
 
 	/* default output name prefix */
 	sprintf(outname, "ftq");
@@ -129,13 +128,10 @@ int main(int argc, char **argv)
 		exit(EXIT_FAILURE);
 	}
 
-	set = CPU_ALLOC(numthreads);
-	/* lock us down. */
-	CPU_SET(0, set);
-#ifndef ros
-	sched_setaffinity(0, numthreads, set);
-#endif
-
+	/* (try to) lock us down. In principle we should do an FTQ run ourselves, rather
+	 * than spawning N threads. We'll get to it.
+	 */
+	wireme(0);
 	/*
 	 * set up sampling.  first, take a few bogus samples to warm up the
 	 * cache and pipeline
@@ -143,48 +139,26 @@ int main(int argc, char **argv)
 	interval_length = 1 << interval_bits;
 
 	if (use_threads == 1) {
-		/* we really don't want to do this for long but we'll do it for now. Yuck. */
-# ifdef __ros__
-               /* Non-standard way to make sure we never yield a vcore (don't rely on
-                * these interfaces, you should have a good 2LS). */
-               pthread_can_vcore_request(FALSE);
-               pthread_need_tls(FALSE);
-               pthread_lib_init();
-               /* we already have 1 from init */
-               if (vcore_request(numthreads - 1)) {
-                       printf("Unable to request %d vcores (got %d, max %d), exiting.\n",
-                              numthreads, num_vcores(), max_vcores());
-                       exit(-1);
-               }
-# endif /* __ros__ */
-
+		if (threadinit(numthreads) < 0) {
+			fprintf(stderr, "threadinit failed\n");
+			assert(0);
+		}
 		threads = malloc(sizeof(pthread_t) * numthreads);
 		assert(threads != NULL);
 		start = nsec();
 		cyclestart = getticks();
-		/* TODO: put a barrier in place, and threads don't start until we
-		 * enable the barrier.
-		 */
+		/* TODO: abstract this nonsense into a call in linux.c/akaros.c/etc */
 		for (i = 0; i < numthreads; i++) {
-			CPU_SET(i, set);
 			rc = pthread_create(&threads[i], NULL, ftq_core,
 								(void *)(intptr_t) i);
 			if (rc) {
 				fprintf(stderr, "ERROR: pthread_create() failed.\n");
 				exit(EXIT_FAILURE);
 			}
-#ifndef ros
-			rc = pthread_setaffinity_np(threads[i], numthreads, set);
-			if (rc) {
-				fprintf(stderr, "ERROR: pthread_setaffinity_np() failed.\n");
-				exit(EXIT_FAILURE);
-			}
-#endif
-			CPU_CLR(i, set);
 		}
 
 		hounds = 1;
-
+		/* TODO: abstract this nonsense into a call in linux.c/akaros.c/etc */
 		for (i = 0; i < numthreads; i++) {
 			rc = pthread_join(threads[i], NULL);
 			if (rc) {

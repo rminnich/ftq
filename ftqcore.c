@@ -36,6 +36,8 @@ void *ftq_core(void *arg)
 	unsigned long done;
 	unsigned long long count;
 
+	/* core # is thread # */
+	wireme(thread_num);
 	offset = thread_num * numsamples * 2;
 	done = 0;
 	count = 0;

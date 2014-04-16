@@ -23,3 +23,6 @@ void *ftq_core(void *arg);
 /* Sorry, Plan 9; don't know how to manage FILE yet */
 ticks nsec(void);
 void osinfo(FILE * f, int core);
+int threadinit(int numthreads);
+/* known to be doable in Plan 9 and Linux. Akaros? not sure. */
+int wireme(int core);
