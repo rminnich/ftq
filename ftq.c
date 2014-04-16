@@ -141,6 +141,21 @@ int main(int argc, char **argv)
 	interval_length = 1 << interval_bits;
 
 	if (use_threads == 1) {
+		/* we really don't want to do this for long but we'll do it for now. Yuck. */
+# ifdef __ros__
+               /* Non-standard way to make sure we never yield a vcore (don't rely on
+                * these interfaces, you should have a good 2LS). */
+               pthread_can_vcore_request(FALSE);
+               pthread_need_tls(FALSE);
+               pthread_lib_init();
+               /* we already have 1 from init */
+               if (vcore_request(numthreads - 1)) {
+                       printf("Unable to request %d vcores (got %d, max %d), exiting.\n",
+                              numthreads, num_vcores(), max_vcores());
+                       exit(-1);
+               }
+# endif /* __ros__ */
+
 		threads = malloc(sizeof(pthread_t) * numthreads);
 		assert(threads != NULL);
 		start = nsec();
@@ -223,7 +238,8 @@ int main(int argc, char **argv)
 		}
 	}
 
-	pthread_exit(NULL);
+	if (use_threads)
+		pthread_exit(NULL);
 
 	exit(EXIT_SUCCESS);
 }
