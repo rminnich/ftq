@@ -118,13 +118,9 @@ int main(int argc, char **argv)
 				MAX_BITS);
 		interval_bits = MAX_BITS;
 	}
-	if (use_threads == 1 && numthreads < 2) {
-		fprintf(stderr, "ERROR: >1 threads required for multithread mode.\n");
-		exit(EXIT_FAILURE);
-	}
-	if (use_threads == 1 && use_stdout == 1) {
+	if (use_stdout == 1 && numthreads > 1) {
 		fprintf(stderr,
-				"ERROR: cannot output to stdout for multithread mode.\n");
+				"ERROR: cannot output to stdout for more than one thread.\n");
 		exit(EXIT_FAILURE);
 	}
 
