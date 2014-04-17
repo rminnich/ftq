@@ -170,6 +170,7 @@ int main(int argc, char **argv)
 		end = nsec();
 
 	} else {
+		hounds = 1;
 		start = nsec();
 		cyclestart = getticks();
 		ftq_core(0);
