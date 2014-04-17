@@ -2,6 +2,7 @@
 #include <time.h>
 #include <sys/utsname.h>
 #include <ros/syscall.h>
+#include <timing.h>
 
 /* do what is needed and return the time resolution in nanoseconds. */
 int initticks()
@@ -12,16 +13,15 @@ int initticks()
 }
 
 /* return current time in ns as a 'tick' */
-/* todo: at least implement '#c/bintime!' Then initticks could
+/* On akaros, this only returns the amount of time since boot, not since 1970.
+ * This is fine for now, since the only user of nsec subtracts end - start.
+ *
+ * TODO: at least implement '#c/bintime!' Then initticks could
  * open it and this would be a simple read(bintimefd, &64bit, 8);
  */
 ticks nsec()
 {
-	struct timeval t;
-	ticks val;
-	gettimeofday(&t, NULL);
-	val = t.tv_sec * 1024 * 1024 * 1024 + t.tv_usec*1024;
-	return val;
+	return tsc2nsec(read_tsc());
 }
 
 /* do the best you can. */
