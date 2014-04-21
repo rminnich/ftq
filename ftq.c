@@ -22,6 +22,7 @@
  * for details.
  */
 #include "ftq.h"
+#include <sys/mman.h>
 
 void usage(char *av0)
 {
@@ -54,6 +55,7 @@ int main(int argc, char **argv)
 	ticks start, end, ns;
 	ticks cyclestart, cycleend, cycles, base;
 	float nspercycle;
+	size_t samples_size;
 
 	/* default output name prefix */
 	sprintf(outname, "ftq");
@@ -113,8 +115,17 @@ int main(int argc, char **argv)
 		numsamples = MAX_SAMPLES;
 	}
 	/* allocate sample storage */
-	samples = malloc(sizeof(unsigned long long) * numsamples * 2 * numthreads);
-	assert(samples != NULL);
+	samples_size = sizeof(unsigned long long) * numsamples * 2 * numthreads;
+	samples = mmap(0, samples_size, PROT_READ | PROT_WRITE,
+	               MAP_ANONYMOUS | MAP_PRIVATE | MAP_POPULATE | MAP_LOCKED,
+	               -1, 0);
+	if (samples == MAP_FAILED) {
+		perror("Failed to mmap, will just malloc");
+		samples = malloc(samples_size);
+		assert(samples);
+	}
+	/* in case mmap failed or MAP_POPULATE didn't populate */
+	memset(samples, 0, samples_size);
 
 	if (use_stdout == 1 && numthreads > 1) {
 		fprintf(stderr,
@@ -139,6 +150,8 @@ int main(int argc, char **argv)
 			assert(0);
 		}
 		threads = malloc(sizeof(pthread_t) * numthreads);
+		/* fault in the array, o/w we'd take the faults after 'start' */
+		memset(threads, 0, sizeof(pthread_t) * numthreads);
 		assert(threads != NULL);
 		start = nsec();
 		cyclestart = getticks();
