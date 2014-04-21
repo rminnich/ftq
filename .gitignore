@@ -2,5 +2,6 @@
 *.swo
 *.o
 *.dat
+*.Rapp.history
 ftq.linux
 ftq.akaros
