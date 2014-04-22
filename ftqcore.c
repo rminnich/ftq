@@ -34,7 +34,7 @@ void *ftq_core(void *arg)
 	int k;
 	ticks now, last, endinterval;
 	unsigned long done;
-	unsigned long long count;
+	volatile unsigned long long count;
 
 	/* core # is thread # */
 	wireme(thread_num);

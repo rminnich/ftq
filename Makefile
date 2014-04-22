@@ -1,8 +1,7 @@
 CC = cc
 ACC = x86_64-ros-gcc
-# Note the -O0. You should *never* optimize this benchmark!
-CFLAGS = -Wall -O0
-ACFLAGS = -Wall -O0 -Dros
+CFLAGS = -Wall -O2
+ACFLAGS = -Wall -O2 -Dros
 LIBS =
 LDFLAGS = $(USER_OPT)
 
