@@ -183,8 +183,9 @@ int main(int argc, char **argv)
 	fprintf(stderr, "cyclestart %lld cycleend %lld elapsed %lld\n",
 			cyclestart, cycleend, cycles);
 	nspercycle = (1.0 * ns) / cycles;
-	fprintf(stderr, "Cycles per ns. is %f; nspercycle is %f\n",
+	fprintf(stderr, "Avg Cycles(ticks) per ns. is %f; nspercycle is %f\n",
 			(1.0 * cycles) / ns, nspercycle);
+	fprintf(stderr, "Pre-computed ticks per ns: %f\n", ticksperns);
 	fprintf(stderr, "Sample frequency is %f\n", 1e9 / interval);
 	if (use_stdout == 1) {
 		header(stdout, nspercycle, 0);

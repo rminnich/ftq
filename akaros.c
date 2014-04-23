@@ -85,3 +85,8 @@ int wireme(int core)
 	/* can't do this. */
 	return 0;
 }
+
+double compute_ticksperns(void)
+{
+	return 1e-9 * get_tsc_freq();
+}
