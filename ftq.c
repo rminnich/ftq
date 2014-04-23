@@ -26,17 +26,17 @@
 void usage(char *av0)
 {
 	fprintf(stderr,
-			"usage: %s [-t threads] [-n samples] [-i bits] [-h] [-o outname] [-s]\n",
+			"usage: %s [-t threads] [-n samples] [-f frequency] [-h] [-o outname] [-s]\n",
 			av0);
 	exit(EXIT_FAILURE);
 }
 
 void header(FILE * f, float nspercycle, int core)
 {
-	fprintf(f, "# Frequency %f\n", nspercycle * interval_length);
+	fprintf(f, "# Frequency %f\n", 1e9 / interval);
 	fprintf(f, "# octave: pkg load signal");
 	fprintf(f, "# x = load(<file name>)\n");
-	fprintf(f, "# pwelch(x(:,2),[],[],[],%f)\n", nspercycle * interval_length);
+	fprintf(f, "# pwelch(x(:,2),[],[],[],%f)\n", 1e9 / interval);
 	fprintf(f, "# core %d\n", core);
 	osinfo(f, core);
 }
@@ -68,14 +68,15 @@ int main(int argc, char **argv)
 		static struct option long_options[] = {
 			{"help", 0, 0, 'h'},
 			{"numsamples", 0, 0, 'n'},
-			{"interval", 0, 0, 'i'},
+			{"frequency", 0, 0, 'f'},
 			{"outname", 0, 0, 'o'},
 			{"stdout", 0, 0, 's'},
 			{"threads", 0, 0, 't'},
 			{0, 0, 0, 0}
 		};
 
-		c = getopt_long(argc, argv, "n:hsi:o:t:", long_options, &option_index);
+		c = getopt_long(argc, argv, "n:hsf:o:t:", long_options,
+						&option_index);
 		if (c == -1)
 			break;
 
@@ -90,8 +91,10 @@ int main(int argc, char **argv)
 			case 'o':
 				sprintf(outname, "%s", optarg);
 				break;
-			case 'i':
-				interval_bits = atoi(optarg);
+			case 'f':
+				/* the interval units are ns. */
+				interval = (unsigned long long)
+					(1e9 / atoi(optarg));
 				break;
 			case 'n':
 				numsamples = atoi(optarg);
@@ -113,16 +116,13 @@ int main(int argc, char **argv)
 	samples = malloc(sizeof(unsigned long long) * numsamples * 2 * numthreads);
 	assert(samples != NULL);
 
-	if (interval_bits > MAX_BITS || interval_bits < MIN_BITS) {
-		fprintf(stderr, "WARNING: interval bits invalid.  set to %d.\n",
-				MAX_BITS);
-		interval_bits = MAX_BITS;
-	}
 	if (use_stdout == 1 && numthreads > 1) {
 		fprintf(stderr,
 				"ERROR: cannot output to stdout for more than one thread.\n");
 		exit(EXIT_FAILURE);
 	}
+
+	ticksperns = compute_ticksperns();
 
 	/* (try to) lock us down. In principle we should do an FTQ run ourselves, rather
 	 * than spawning N threads. We'll get to it.
@@ -132,7 +132,6 @@ int main(int argc, char **argv)
 	 * set up sampling.  first, take a few bogus samples to warm up the
 	 * cache and pipeline
 	 */
-	interval_length = 1 << interval_bits;
 
 	if (use_threads == 1) {
 		if (threadinit(numthreads) < 0) {
@@ -186,12 +185,13 @@ int main(int argc, char **argv)
 	nspercycle = (1.0 * ns) / cycles;
 	fprintf(stderr, "Cycles per ns. is %f; nspercycle is %f\n",
 			(1.0 * cycles) / ns, nspercycle);
-	fprintf(stderr, "Sample frequency is %f\n", nspercycle * interval_length);
+	fprintf(stderr, "Sample frequency is %f\n", 1e9 / interval);
 	if (use_stdout == 1) {
 		header(stdout, nspercycle, 0);
 		for (i = 0, base = samples[0]; i < numsamples; i++) {
-			fprintf(stdout, "%f %lld\n",
-					nspercycle * (samples[i * 2] - base), samples[i * 2 + 1]);
+			fprintf(stdout, "%lld %lld\n",
+					(ticks) (nspercycle * (samples[i * 2] - base)),
+					samples[i * 2 + 1]);
 		}
 	} else {
 
@@ -204,9 +204,9 @@ int main(int argc, char **argv)
 			}
 			header(fp, nspercycle, j);
 			for (i = 0, base = samples[numsamples * j * 2]; i < numsamples; i++) {
-				fprintf(fp, "%f %lld\n",
-						nspercycle * (samples[j * numsamples * 2 + i * 2] -
-									  base),
+				fprintf(fp, "%lld %lld\n",
+						(ticks) (nspercycle *
+								 (samples[j * numsamples * 2 + i * 2] - base)),
 						samples[j * numsamples * 2 + i * 2 + 1]);
 			}
 			fclose(fp);

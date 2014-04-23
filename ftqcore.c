@@ -18,13 +18,15 @@
 
 /* samples: each sample has a timestamp and a work count. */
 unsigned long long *samples;
-unsigned long long interval_length;
-int interval_bits = DEFAULT_BITS;
+unsigned long long interval = DEFAULT_INTERVAL;
 unsigned long numsamples = DEFAULT_COUNT;
+double ticksperns;
 int hounds = 0;
 
 /*************************************************************************
  * FTQ core: does the measurement                                        *
+ * All time base here is in ticks; computation to ns is done elsewhere   *
+ * as needed.                                                            *
  *************************************************************************/
 void *ftq_core(void *arg)
 {
@@ -32,7 +34,7 @@ void *ftq_core(void *arg)
 	int thread_num = (uintptr_t) arg;
 	int i, offset;
 	int k;
-	ticks now, last, endinterval;
+	ticks tickstart, ticknow, ticklast, tickend, tickinterval;
 	unsigned long done;
 	volatile unsigned long long count;
 
@@ -41,10 +43,11 @@ void *ftq_core(void *arg)
 	offset = thread_num * numsamples * 2;
 	done = 0;
 	count = 0;
+	tickinterval = interval * ticksperns;
 
 	while (!hounds) ;
-	last = getticks();
-	endinterval = (last + interval_length) & (~(interval_length - 1));
+	tickstart = getticks();
+	tickend = tickstart + tickinterval;
 
 	/***************************************************/
 	/* first, warm things up with 1000 test iterations */
@@ -52,16 +55,16 @@ void *ftq_core(void *arg)
 	for (i = 0; i < 1000; i++) {
 		count = 0;
 
-		for (now = last; now < endinterval;) {
+		for (ticknow = ticklast = getticks();
+			 ticknow < tickend; ticknow = getticks()) {
 			for (k = 0; k < ITERCOUNT; k++)
 				count++;
 			for (k = 0; k < (ITERCOUNT - 1); k++)
 				count--;
 
-			now = getticks();
 		}
 
-		samples[(done * 2) + offset] = last;
+		samples[(done * 2) + offset] = ticklast;
 		samples[(done * 2) + 1 + offset] = count;
 
 		done++;
@@ -69,29 +72,30 @@ void *ftq_core(void *arg)
 		if (done >= numsamples)
 			break;
 
-		last = getticks();
+		ticklast = getticks();
 
-		endinterval = (last + interval_length) & (~(interval_length - 1));
+		tickend = tickstart + done * tickinterval;
 	}
 
 	/****************************/
 	/* now do the real sampling */
 	/****************************/
 	done = 0;
+	tickstart = getticks();
+	tickend = tickstart + tickinterval;
 
 	while (1) {
 		count = 0;
 
-		for (now = last; now < endinterval;) {
+		for (ticknow = ticklast = getticks();
+			 ticknow < tickend; ticknow = getticks()) {
 			for (k = 0; k < ITERCOUNT; k++)
 				count++;
 			for (k = 0; k < (ITERCOUNT - 1); k++)
 				count--;
-
-			now = getticks();
 		}
 
-		samples[(done * 2) + offset] = last;
+		samples[(done * 2) + offset] = ticklast;
 		samples[(done * 2) + 1 + offset] = count;
 
 		done++;
@@ -99,9 +103,9 @@ void *ftq_core(void *arg)
 		if (done >= numsamples)
 			break;
 
-		last = getticks();
+		ticklast = getticks();
 
-		endinterval = (last + interval_length) & (~(interval_length - 1));
+		tickend = tickstart + done * tickinterval;
 	}
 
 	return NULL;

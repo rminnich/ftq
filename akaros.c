@@ -9,7 +9,7 @@ int initticks()
 {
 	/* Right now, on Akaros, not much to do, and it's not very good. */
 	/* we'll assume 60 hz. */
-	return 16*1024*1024; 
+	return 16 * 1024 * 1024;
 }
 
 /* return current time in ns as a 'tick' */
@@ -73,11 +73,11 @@ int threadinit(int numthreads)
 	/* we already have 1 from init */
 	if (vcore_request(numthreads - 1)) {
 		printf("Unable to request %d vcores (got %d, max %d), exiting.\n",
-		       numthreads, num_vcores(), max_vcores());
+			   numthreads, num_vcores(), max_vcores());
 		return -1;
 	}
 	return 0;
-	
+
 }
 
 int wireme(int core)

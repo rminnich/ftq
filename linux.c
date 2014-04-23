@@ -92,3 +92,22 @@ int wireme(int core)
 	CPU_FREE(set);
 	return 0;
 }
+
+double compute_ticksperns(void)
+{
+	ticks tickstart, tickend;
+	unsigned long long timestart, timeend, ns;
+	double convert;
+	ticks el;
+
+	timestart = nsec();
+	tickstart = getticks();
+	sleep(2);
+	tickend = getticks();
+	timeend = nsec();
+	ns = timeend - timestart;
+	el = tickend - tickstart;
+	convert = (1.0 * el) / ns;
+	printf("ticks per ns %g\n", convert);
+	return convert;
+}
