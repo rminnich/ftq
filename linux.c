@@ -27,7 +27,7 @@ ticks nsec()
 		fprintf(stderr, "%s: clock_gettime failed\n", __func__);
 		exit(1);
 	}
-	val = t.tv_sec * 1024 * 1024 * 1024 + t.tv_nsec;
+	val = t.tv_sec * 1000 * 1000 * 1000 + t.tv_nsec;
 	return val;
 }
 
