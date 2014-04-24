@@ -1,7 +1,7 @@
 /** defaults **/
 #define MAX_SAMPLES    2000000
 #define DEFAULT_COUNT  524288
-#define DEFAULT_INTERVAL 10000
+#define DEFAULT_INTERVAL 100000
 #define MAX_BITS       30
 #define MIN_BITS       3
 
