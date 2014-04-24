@@ -14,4 +14,4 @@ akaros:
 	$(ACC) $(ACFLAGS) --include linux.h -Wall ftq.c ftqcore.c akaros.c -o ftq.akaros -lpthread
 
 clean:
-	rm -f *.o t_ftq ftq ftq.linux ftq.akaros
+	rm -f *.o t_ftq ftq ftq.linux ftq.akaros *~
