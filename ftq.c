@@ -212,7 +212,7 @@ int main(int argc, char **argv)
 		for (j = 0; j < numthreads; j++) {
 			sprintf(fname, "%s_%d.dat", outname, j);
 			fp = fopen(fname, "w");
-			if (fp < 0) {
+			if (!fp) {
 				perror("can not create file");
 				exit(EXIT_FAILURE);
 			}
