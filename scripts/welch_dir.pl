@@ -20,7 +20,9 @@ for my $file (@files) {
 	if($file =~ m/.dat$/) {
 		my $infile = my $outfile = $file;
 		$outfile =~ s/.dat$/.pdf/;
-		my $syscall = "Rscript welch.R $dir$infile $dir$outfile $max_freq";
+		my $syscall = "Rscript welch.R " .
+			"-i $dir$infile -o $dir$outfile " .
+			"--xmax $max_freq";
 		print $syscall."\n";
 		my $status = system($syscall);
 		if(($status >>= 8) != 0) {
