@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <sys/utsname.h>
+#include "ftq.h"
 /* do what is needed and return the time resolution in nanoseconds. */
 int initticks()
 {
@@ -85,7 +86,7 @@ int wireme(int core)
 	CPU_SET(core, set);
 	ret = sched_setaffinity(0, numthreads, set);
 	/* just blow up. If they ignore this error the numbers will be crap. */
-	if (ret < 0) {
+	if ((ret < 0) && (! ignore_wire_failures)) {
 		fprintf(stderr, "wireme: pid %d, core %d, %m\n", getpid(), core);
 		exit(1);
 	}
