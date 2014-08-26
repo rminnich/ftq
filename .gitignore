@@ -4,4 +4,5 @@
 *.dat
 *.Rapp.history
 ftq.linux
+ftq.static.linux
 ftq.akaros
