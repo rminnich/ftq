@@ -47,7 +47,7 @@ void *ftq_core(void *arg)
 
 	while (!hounds) ;
 	tickstart = getticks();
-	tickend = tickstart + tickinterval;
+	tickend = tickstart + (done + 1) * tickinterval;
 
 	/***************************************************/
 	/* first, warm things up with 1000 test iterations */
@@ -74,7 +74,7 @@ void *ftq_core(void *arg)
 
 		ticklast = getticks();
 
-		tickend = tickstart + done * tickinterval;
+		tickend = tickstart + (done + 1) * tickinterval;
 	}
 
 	/****************************/
@@ -82,7 +82,7 @@ void *ftq_core(void *arg)
 	/****************************/
 	done = 0;
 	tickstart = getticks();
-	tickend = tickstart + tickinterval;
+	tickend = tickstart + (done + 1) * tickinterval;
 
 	while (1) {
 		count = 0;
@@ -105,7 +105,7 @@ void *ftq_core(void *arg)
 
 		ticklast = getticks();
 
-		tickend = tickstart + done * tickinterval;
+		tickend = tickstart + (done + 1) * tickinterval;
 	}
 
 	return NULL;
