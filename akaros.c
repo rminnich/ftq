@@ -2,7 +2,7 @@
 #include <time.h>
 #include <sys/utsname.h>
 #include <ros/syscall.h>
-#include <timing.h>
+#include <parlib/timing.h>
 
 /* do what is needed and return the time resolution in nanoseconds. */
 int initticks()

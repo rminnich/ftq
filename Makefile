@@ -1,5 +1,5 @@
 CC = cc
-ACC = x86_64-ros-gcc
+ACC = x86_64-ucb-akaros-gcc
 CFLAGS = -Wall -O2
 ACFLAGS = -Wall -O2 -Dros
 LIBS =
