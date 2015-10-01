@@ -21,6 +21,7 @@ unsigned long long *samples;
 unsigned long long interval = DEFAULT_INTERVAL;
 unsigned long numsamples = DEFAULT_COUNT;
 double ticksperns;
+int rt_free_cores = 2;
 int hounds = 0;
 
 /*************************************************************************
@@ -40,6 +41,18 @@ void *ftq_core(void *arg)
 
 	/* core # is thread # */
 	wireme(thread_num);
+
+	if (set_realtime) {
+		int cores = get_num_cores();
+
+		/*
+		 * Leave at least rt_free_cores cores to the OS to run things
+		 * while the test runs.
+		 */
+		if (thread_num + rt_free_cores < cores)
+			set_sched_realtime();
+	}
+
 	offset = thread_num * numsamples * 2;
 	done = 0;
 	count = 0;

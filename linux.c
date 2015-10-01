@@ -1,7 +1,12 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
 #include <time.h>
+#include <errno.h>
+#include <sched.h>
 #include <sys/utsname.h>
 #include "ftq.h"
+
 /* do what is needed and return the time resolution in nanoseconds. */
 int initticks()
 {
@@ -112,3 +117,23 @@ double compute_ticksperns(void)
 	printf("ticks per ns %g\n", convert);
 	return convert;
 }
+
+int get_num_cores(void)
+{
+	return sysconf(_SC_NPROCESSORS_ONLN);
+}
+
+void set_sched_realtime(void)
+{
+	const int policy = SCHED_FIFO;
+	struct sched_param sp;
+
+	memset(&sp, 0, sizeof(sp));
+	sp.sched_priority = sched_get_priority_max(policy);
+
+	if (sched_setscheduler(0, policy, &sp)) {
+		perror("sched_setscheduler");
+		exit(1);
+	}
+}
+

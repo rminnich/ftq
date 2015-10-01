@@ -25,12 +25,13 @@
 #include <sys/mman.h>
 
 int ignore_wire_failures = 0;
+int set_realtime = 0;
 
 void usage(char *av0)
 {
 	fprintf(stderr,
-			"usage: %s [-t threads] [-n samples] [-f frequency] [-h] [-o outname] [-s]"
-			"[-T ticks-per-ns-float]"
+			"usage: %s [-t threads] [-n samples] [-f frequency] [-h] [-o outname] [-s] [-r] "
+			"[-T ticks-per-ns-float] "
 			"[-w (ignore wire failures -- only do this if there is no option"
 			"\n",
 			av0);
@@ -41,7 +42,7 @@ void header(FILE * f, float nspercycle, int core)
 {
 	fprintf(f, "# Frequency %f\n", 1e9 / interval);
 	fprintf(f, "# Ticks per ns: %g\n", ticksperns);
-	fprintf(f, "# octave: pkg load signal");
+	fprintf(f, "# octave: pkg load signal\n");
 	fprintf(f, "# x = load(<file name>)\n");
 	fprintf(f, "# pwelch(x(:,2),[],[],[],%f)\n", 1e9 / interval);
 	fprintf(f, "# core %d\n", core);
@@ -84,10 +85,11 @@ int main(int argc, char **argv)
 			{"threads", 0, 0, 't'},
 			{"ticksperns", 0, 0, 'T'},
 			{"ignore_wire_failures", 0, 0, 'w'},
+			{"realtime", 0, 0, 'r'},
 			{0, 0, 0, 0}
 		};
 
-		c = getopt_long(argc, argv, "n:hsf:o:t:T:w", long_options,
+		c = getopt_long(argc, argv, "n:hsf:o:t:T:wr", long_options,
 						&option_index);
 		if (c == -1)
 			break;
@@ -116,6 +118,9 @@ int main(int argc, char **argv)
 				break;
 			case 'T':
 				sscanf(optarg, "%lg", &ticksperns);
+				break;
+			case 'r':
+				set_realtime = 1;
 				break;
 			case 'h':
 			default:
@@ -152,15 +157,10 @@ int main(int argc, char **argv)
 	if (ticksperns == 0.0)
 		ticksperns = compute_ticksperns();
 
-	/* (try to) lock us down. In principle we should do an FTQ run ourselves, rather
-	 * than spawning N threads. We'll get to it.
-	 */
-	wireme(0);
 	/*
 	 * set up sampling.  first, take a few bogus samples to warm up the
 	 * cache and pipeline
 	 */
-
 	if (use_threads == 1) {
 		if (threadinit(numthreads) < 0) {
 			fprintf(stderr, "threadinit failed\n");
@@ -193,7 +193,6 @@ int main(int argc, char **argv)
 		}
 		cycleend = getticks();
 		end = nsec();
-
 	} else {
 		hounds = 1;
 		start = nsec();
