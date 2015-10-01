@@ -90,3 +90,14 @@ double compute_ticksperns(void)
 {
 	return 1e-9 * get_tsc_freq();
 }
+
+int get_num_cores(void)
+{
+	return 1;
+}
+
+void set_sched_realtime(void)
+{
+
+}
+

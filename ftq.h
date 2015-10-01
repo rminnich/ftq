@@ -1,3 +1,6 @@
+
+#include <stdio.h>
+
 /** defaults **/
 #define MAX_SAMPLES    2000000
 #define DEFAULT_COUNT  524288
@@ -15,6 +18,7 @@ extern unsigned long long interval;
 extern unsigned long numsamples;
 extern int hounds;
 extern int ignore_wire_failures;
+extern int set_realtime;
 extern double ticksperns;
 
 /* ftqcore.c */
@@ -28,3 +32,7 @@ int threadinit(int numthreads);
 double compute_ticksperns(void);
 /* known to be doable in Plan 9 and Linux. Akaros? not sure. */
 int wireme(int core);
+
+int get_num_cores(void);
+void set_sched_realtime(void);
+
