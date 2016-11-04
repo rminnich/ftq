@@ -65,17 +65,12 @@ void osinfo(FILE * f, int core)
 
 int threadinit(int numthreads)
 {
-	/* Non-standard way to make sure we never yield a vcore (don't rely on
-	 * these interfaces, you should have a good 2LS). */
-	pthread_can_vcore_request(FALSE);
+	/* Make sure we never yield a vcore, nor ask for more */
+	parlib_never_yield = TRUE;
 	pthread_need_tls(FALSE);
 	pthread_lib_init();
-	/* we already have 1 from init */
-	if (vcore_request(numthreads - 1)) {
-		printf("Unable to request %d vcores (got %d, max %d), exiting.\n",
-			   numthreads, num_vcores(), max_vcores());
-		return -1;
-	}
+	vcore_request_total(numthreads);
+	parlib_never_vc_request = TRUE;
 	return 0;
 
 }
