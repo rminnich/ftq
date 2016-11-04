@@ -170,7 +170,7 @@ int main(int argc, char **argv)
 		/* fault in the array, o/w we'd take the faults after 'start' */
 		memset(threads, 0, sizeof(pthread_t) * numthreads);
 		assert(threads != NULL);
-		start = nsec();
+		start = nsec_ticks();
 		cyclestart = getticks();
 		/* TODO: abstract this nonsense into a call in linux.c/akaros.c/etc */
 		for (i = 0; i < numthreads; i++) {
@@ -192,14 +192,14 @@ int main(int argc, char **argv)
 			}
 		}
 		cycleend = getticks();
-		end = nsec();
+		end = nsec_ticks();
 	} else {
 		hounds = 1;
-		start = nsec();
+		start = nsec_ticks();
 		cyclestart = getticks();
 		ftq_core(0);
 		cycleend = getticks();
-		end = nsec();
+		end = nsec_ticks();
 	}
 
 	/* We now have the total ns used, and the total ticks used. */

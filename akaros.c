@@ -19,9 +19,9 @@ int initticks()
  * TODO: at least implement '#c/bintime!' Then initticks could
  * open it and this would be a simple read(bintimefd, &64bit, 8);
  */
-ticks nsec()
+ticks nsec_ticks()
 {
-	return tsc2nsec(read_tsc());
+	return (ticks)nsec();
 }
 
 /* do the best you can. */

@@ -22,7 +22,7 @@ int initticks()
 }
 
 /* return current time in ns as a 'tick' */
-ticks nsec()
+ticks nsec_ticks()
 {
 	struct timespec t;
 	int ret;
@@ -106,11 +106,11 @@ double compute_ticksperns(void)
 	double convert;
 	ticks el;
 
-	timestart = nsec();
+	timestart = nsec_ticks();
 	tickstart = getticks();
 	sleep(2);
 	tickend = getticks();
-	timeend = nsec();
+	timeend = nsec_ticks();
 	ns = timeend - timestart;
 	el = tickend - tickstart;
 	convert = (1.0 * el) / ns;
