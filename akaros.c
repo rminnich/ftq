@@ -67,8 +67,7 @@ int threadinit(int numthreads)
 {
 	/* Make sure we never yield a vcore, nor ask for more */
 	parlib_never_yield = TRUE;
-	pthread_need_tls(FALSE);
-	pthread_lib_init();
+	pthread_mcp_init();
 	vcore_request_total(numthreads);
 	parlib_never_vc_request = TRUE;
 	return 0;
