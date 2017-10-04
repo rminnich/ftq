@@ -86,10 +86,13 @@ int wireme(int core)
 	cpu_set_t *set;
 	int numthreads = core + 1;
 	int ret;
+	size_t size;
 	set = CPU_ALLOC(numthreads);
+	size = CPU_ALLOC_SIZE(numthreads);
+	CPU_ZERO_S(size, set);
 	/* lock us down. */
-	CPU_SET(core, set);
-	ret = sched_setaffinity(0, numthreads, set);
+	CPU_SET_S(core, size, set);
+	ret = sched_setaffinity(0, size, set);
 	/* just blow up. If they ignore this error the numbers will be crap. */
 	if ((ret < 0) && (! ignore_wire_failures)) {
 		fprintf(stderr, "wireme: pid %d, core %d, %m\n", getpid(), core);

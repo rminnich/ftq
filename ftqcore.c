@@ -42,6 +42,8 @@ void *ftq_core(void *arg)
 	/* core # is thread # */
 	wireme(thread_num);
 
+	usleep(20000);
+
 	if (set_realtime) {
 		int cores = get_num_cores();
 
