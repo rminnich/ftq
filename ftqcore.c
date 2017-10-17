@@ -69,8 +69,9 @@ void *ftq_core(void *arg)
 	ticks tickinterval;
 	unsigned long total_count = 0;
 
-	/* core # is thread # */
-	wireme(thread_num);
+	/* core # is thread # for some OSs (not Akaros pth 2LS) */
+	if (pin_threads)
+		wireme(thread_num);
 
 	if (set_realtime) {
 		int cores = get_num_cores();

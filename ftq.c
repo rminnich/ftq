@@ -26,6 +26,7 @@
 
 int ignore_wire_failures = 0;
 int set_realtime = 0;
+int pin_threads = 1;
 
 void usage(char *av0)
 {
@@ -198,6 +199,7 @@ int main(int argc, char **argv)
 		cycleend = getticks();
 		end = nsec_ticks();
 	} else {
+		pin_threads = 0;
 		hounds = 1;
 		start = nsec_ticks();
 		cyclestart = getticks();

@@ -19,6 +19,7 @@ extern unsigned long numsamples;
 extern volatile int hounds;
 extern int ignore_wire_failures;
 extern int set_realtime;
+extern int pin_threads;
 extern double ticksperns;
 
 /* ftqcore.c */
