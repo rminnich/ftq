@@ -29,15 +29,44 @@ int hounds = 0;
  * All time base here is in ticks; computation to ns is done elsewhere   *
  * as needed.                                                            *
  *************************************************************************/
+
+static unsigned long main_loops(unsigned int numsamples, ticks tickinterval,
+                                int offset)
+{
+	int k;
+	unsigned long done;
+	volatile unsigned long long count;
+	unsigned long total_count = 0;
+	ticks ticknow, ticklast, tickend;
+
+	tickend = getticks();
+
+	for (done = 0; done < numsamples; done++) {
+		count = 0;
+		tickend += tickinterval;
+
+		for (ticknow = ticklast = getticks();
+			 ticknow < tickend; ticknow = getticks()) {
+			for (k = 0; k < ITERCOUNT; k++)
+				count++;
+			for (k = 0; k < (ITERCOUNT - 1); k++)
+				count--;
+		}
+
+		samples[(done * 2) + offset] = ticklast;
+		samples[(done * 2) + 1 + offset] = count;
+		total_count += count;
+	}
+	return total_count;
+}
+
+
 void *ftq_core(void *arg)
 {
 	/* thread number, zero based. */
 	int thread_num = (uintptr_t) arg;
-	int i, offset;
-	int k;
-	ticks tickstart, ticknow, ticklast, tickend, tickinterval;
-	unsigned long done;
-	volatile unsigned long long count;
+	int offset;
+	ticks tickinterval;
 	unsigned long total_count = 0;
 
 	/* core # is thread # */
@@ -55,72 +84,20 @@ void *ftq_core(void *arg)
 	}
 
 	offset = thread_num * numsamples * 2;
-	done = 0;
-	count = 0;
 	tickinterval = interval * ticksperns;
 
 	while (!hounds) ;
-	tickstart = getticks();
-	tickend = tickstart + (done + 1) * tickinterval;
+
 
 	/***************************************************/
 	/* first, warm things up with 1000 test iterations */
 	/***************************************************/
-	for (i = 0; i < 1000; i++) {
-		count = 0;
-
-		for (ticknow = ticklast = getticks();
-			 ticknow < tickend; ticknow = getticks()) {
-			for (k = 0; k < ITERCOUNT; k++)
-				count++;
-			for (k = 0; k < (ITERCOUNT - 1); k++)
-				count--;
-
-		}
-
-		samples[(done * 2) + offset] = ticklast;
-		samples[(done * 2) + 1 + offset] = count;
-
-		done++;
-
-		if (done >= numsamples)
-			break;
-
-		ticklast = getticks();
-
-		tickend = tickstart + (done + 1) * tickinterval;
-	}
+	main_loops(1000, tickinterval, offset);
 
 	/****************************/
 	/* now do the real sampling */
 	/****************************/
-	done = 0;
-	tickstart = getticks();
-	tickend = tickstart + (done + 1) * tickinterval;
+	total_count = main_loops(numsamples, tickinterval, offset);
 
-	while (1) {
-		count = 0;
-
-		for (ticknow = ticklast = getticks();
-			 ticknow < tickend; ticknow = getticks()) {
-			for (k = 0; k < ITERCOUNT; k++)
-				count++;
-			for (k = 0; k < (ITERCOUNT - 1); k++)
-				count--;
-		}
-
-		samples[(done * 2) + offset] = ticklast;
-		samples[(done * 2) + 1 + offset] = count;
-
-		total_count += count;
-		done++;
-
-		if (done >= numsamples)
-			break;
-
-		ticklast = getticks();
-
-		tickend = tickstart + (done + 1) * tickinterval;
-	}
 	return (void*)total_count;
 }
