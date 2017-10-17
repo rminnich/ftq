@@ -39,17 +39,17 @@ void usage(char *av0)
 	exit(EXIT_FAILURE);
 }
 
-void header(FILE * f, float nspercycle, int core)
+void header(FILE * f, float nspercycle, int thread)
 {
 	fprintf(f, "# Frequency %f\n", 1e9 / interval);
 	fprintf(f, "# Ticks per ns: %g\n", ticksperns);
 	fprintf(f, "# octave: pkg load signal\n");
 	fprintf(f, "# x = load(<file name>)\n");
 	fprintf(f, "# pwelch(x(:,2),[],[],[],%f)\n", 1e9 / interval);
-	fprintf(f, "# core %d\n", core);
+	fprintf(f, "# thread %d, core %d\n", thread, get_pcoreid());
 	if (ignore_wire_failures)
 		fprintf(f, "# Warning: not wired to this core; results may be flaky\n");
-	osinfo(f, core);
+	osinfo(f, thread);
 }
 
 int main(int argc, char **argv)

@@ -27,3 +27,8 @@
 #define TICKCLOCK CLOCK_MONOTONIC_RAW
 
 #include <pthread.h>
+
+static inline int get_pcoreid(void)
+{
+	return -1;
+}
