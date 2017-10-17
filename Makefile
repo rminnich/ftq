@@ -12,7 +12,7 @@ linux:
 	cc $(CFLAGS) --include linux.h -Wall ftq.c ftqcore.c linux.c -o ftq.static.linux -lpthread -lrt -static
 
 akaros:
-	$(ACC) $(ACFLAGS) --include linux.h -Wall ftq.c ftqcore.c akaros.c -o ftq.akaros -lpthread
+	$(ACC) $(ACFLAGS) --include akaros.h -Wall ftq.c ftqcore.c akaros.c -o ftq.akaros -lpthread
 
 clean:
 	rm -f *.o t_ftq ftq ftq.linux ftq.static.linux ftq.akaros *~
