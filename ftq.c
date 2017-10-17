@@ -65,6 +65,7 @@ int main(int argc, char **argv)
 	ticks cyclestart, cycleend, cycles, base;
 	float nspercycle;
 	size_t samples_size;
+	unsigned long total_count = 0;
 
 	/* default output name prefix */
 	sprintf(outname, "ftq");
@@ -185,11 +186,14 @@ int main(int argc, char **argv)
 		hounds = 1;
 		/* TODO: abstract this nonsense into a call in linux.c/akaros.c/etc */
 		for (i = 0; i < numthreads; i++) {
-			rc = pthread_join(threads[i], NULL);
+			void *retval;
+
+			rc = pthread_join(threads[i], &retval);
 			if (rc) {
 				fprintf(stderr, "ERROR: pthread_join() failed.\n");
 				exit(EXIT_FAILURE);
 			}
+			total_count += (unsigned long)retval;
 		}
 		cycleend = getticks();
 		end = nsec_ticks();
@@ -197,7 +201,7 @@ int main(int argc, char **argv)
 		hounds = 1;
 		start = nsec_ticks();
 		cyclestart = getticks();
-		ftq_core(0);
+		total_count = (unsigned long)ftq_core(0);
 		cycleend = getticks();
 		end = nsec_ticks();
 	}
@@ -216,6 +220,7 @@ int main(int argc, char **argv)
 			(1.0 * cycles) / ns, nspercycle);
 	fprintf(stderr, "Pre-computed ticks per ns: %f\n", ticksperns);
 	fprintf(stderr, "Sample frequency is %f\n", 1e9 / interval);
+	fprintf(stderr, "Total count is %lu\n", total_count);
 	if (use_stdout == 1) {
 		header(stdout, nspercycle, 0);
 		for (i = 0, base = samples[0]; i < numsamples; i++) {

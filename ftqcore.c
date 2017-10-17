@@ -38,6 +38,7 @@ void *ftq_core(void *arg)
 	ticks tickstart, ticknow, ticklast, tickend, tickinterval;
 	unsigned long done;
 	volatile unsigned long long count;
+	unsigned long total_count = 0;
 
 	/* core # is thread # */
 	wireme(thread_num);
@@ -111,6 +112,7 @@ void *ftq_core(void *arg)
 		samples[(done * 2) + offset] = ticklast;
 		samples[(done * 2) + 1 + offset] = count;
 
+		total_count += count;
 		done++;
 
 		if (done >= numsamples)
@@ -120,6 +122,5 @@ void *ftq_core(void *arg)
 
 		tickend = tickstart + (done + 1) * tickinterval;
 	}
-
-	return NULL;
+	return (void*)total_count;
 }
