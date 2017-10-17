@@ -22,7 +22,7 @@ unsigned long long interval = DEFAULT_INTERVAL;
 unsigned long numsamples = DEFAULT_COUNT;
 double ticksperns;
 int rt_free_cores = 2;
-int hounds = 0;
+volatile int hounds = 0;
 
 /*************************************************************************
  * FTQ core: does the measurement                                        *

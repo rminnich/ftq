@@ -16,7 +16,7 @@
 extern unsigned long long *samples;
 extern unsigned long long interval;
 extern unsigned long numsamples;
-extern int hounds;
+extern volatile int hounds;
 extern int ignore_wire_failures;
 extern int set_realtime;
 extern double ticksperns;
