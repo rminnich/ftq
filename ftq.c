@@ -23,6 +23,7 @@
  */
 #include "ftq.h"
 #include <sys/mman.h>
+#include <sys/param.h>
 
 int ignore_wire_failures = 0;
 
@@ -92,7 +93,7 @@ static void *ftq_thread(void *arg)
 	/***************************************************/
 	/* first, warm things up with 1000 test iterations */
 	/***************************************************/
-	main_loops(samples, 1000, tickinterval, offset);
+	main_loops(samples, MIN(1000, numsamples), tickinterval, offset);
 
 	/****************************/
 	/* now do the real sampling */
