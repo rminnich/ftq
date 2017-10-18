@@ -25,8 +25,16 @@
 #include <sys/mman.h>
 
 int ignore_wire_failures = 0;
-int set_realtime = 0;
-int pin_threads = 1;
+
+static int set_realtime = 0;
+static int pin_threads = 1;
+static int rt_free_cores = 2;
+static volatile int hounds = 0;
+/* samples: each sample has a timestamp and a work count. */
+static unsigned long long *samples;
+static size_t numsamples = DEFAULT_COUNT;
+static double ticksperns;
+static unsigned long long interval = DEFAULT_INTERVAL;
 
 void usage(char *av0)
 {
@@ -50,6 +58,48 @@ void header(FILE * f, float nspercycle, int thread)
 	if (ignore_wire_failures)
 		fprintf(f, "# Warning: not wired to this core; results may be flaky\n");
 	osinfo(f, thread);
+}
+
+static void *ftq_thread(void *arg)
+{
+	/* thread number, zero based. */
+	int thread_num = (uintptr_t) arg;
+	int offset;
+	ticks tickinterval;
+	unsigned long total_count = 0;
+
+	/* core # is thread # for some OSs (not Akaros pth 2LS) */
+	if (pin_threads)
+		wireme(thread_num);
+
+	if (set_realtime) {
+		int cores = get_num_cores();
+
+		/*
+		 * Leave at least rt_free_cores cores to the OS to run things
+		 * while the test runs.
+		 */
+		if (thread_num + rt_free_cores < cores)
+			set_sched_realtime();
+	}
+
+	offset = thread_num * numsamples * 2;
+	tickinterval = interval * ticksperns;
+
+	while (!hounds) ;
+
+
+	/***************************************************/
+	/* first, warm things up with 1000 test iterations */
+	/***************************************************/
+	main_loops(samples, 1000, tickinterval, offset);
+
+	/****************************/
+	/* now do the real sampling */
+	/****************************/
+	total_count = main_loops(samples, numsamples, tickinterval, offset);
+
+	return (void*)total_count;
 }
 
 int main(int argc, char **argv)
@@ -176,7 +226,7 @@ int main(int argc, char **argv)
 		cyclestart = getticks();
 		/* TODO: abstract this nonsense into a call in linux.c/akaros.c/etc */
 		for (i = 0; i < numthreads; i++) {
-			rc = pthread_create(&threads[i], NULL, ftq_core,
+			rc = pthread_create(&threads[i], NULL, ftq_thread,
 								(void *)(intptr_t) i);
 			if (rc) {
 				fprintf(stderr, "ERROR: pthread_create() failed.\n");
@@ -203,7 +253,7 @@ int main(int argc, char **argv)
 		hounds = 1;
 		start = nsec_ticks();
 		cyclestart = getticks();
-		total_count = (unsigned long)ftq_core(0);
+		total_count = (unsigned long)ftq_thread(0);
 		cycleend = getticks();
 		end = nsec_ticks();
 	}

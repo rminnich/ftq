@@ -1,5 +1,7 @@
+#pragma once
 
 #include <stdio.h>
+#include "cycle.h"
 
 /** defaults **/
 #define MAX_SAMPLES    2000000
@@ -13,17 +15,11 @@
  */
 #define ITERCOUNT      32
 
-extern unsigned long long *samples;
-extern unsigned long long interval;
-extern unsigned long numsamples;
-extern volatile int hounds;
 extern int ignore_wire_failures;
-extern int set_realtime;
-extern int pin_threads;
-extern double ticksperns;
 
 /* ftqcore.c */
-void *ftq_core(void *arg);
+unsigned long main_loops(unsigned long long *samples, size_t numsamples,
+                         ticks tickinterval, int offset);
 
 /* must be provided by OS code */
 /* Sorry, Plan 9; don't know how to manage FILE yet */

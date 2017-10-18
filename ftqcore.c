@@ -13,25 +13,18 @@
  *
  * Licensed under the terms of the GNU Public Licence.  See LICENCE_GPL
  * for details.
+ *
+ * Keep this file OS-independent.
  */
 #include "ftq.h"
 
-/* samples: each sample has a timestamp and a work count. */
-unsigned long long *samples;
-unsigned long long interval = DEFAULT_INTERVAL;
-unsigned long numsamples = DEFAULT_COUNT;
-double ticksperns;
-int rt_free_cores = 2;
-volatile int hounds = 0;
-
 /*************************************************************************
- * FTQ core: does the measurement                                        *
  * All time base here is in ticks; computation to ns is done elsewhere   *
  * as needed.                                                            *
  *************************************************************************/
 
-static unsigned long main_loops(unsigned int numsamples, ticks tickinterval,
-                                int offset)
+unsigned long main_loops(unsigned long long *samples, size_t numsamples,
+                         ticks tickinterval, int offset)
 {
 	int k;
 	unsigned long done;
@@ -58,47 +51,4 @@ static unsigned long main_loops(unsigned int numsamples, ticks tickinterval,
 		total_count += count;
 	}
 	return total_count;
-}
-
-
-void *ftq_core(void *arg)
-{
-	/* thread number, zero based. */
-	int thread_num = (uintptr_t) arg;
-	int offset;
-	ticks tickinterval;
-	unsigned long total_count = 0;
-
-	/* core # is thread # for some OSs (not Akaros pth 2LS) */
-	if (pin_threads)
-		wireme(thread_num);
-
-	if (set_realtime) {
-		int cores = get_num_cores();
-
-		/*
-		 * Leave at least rt_free_cores cores to the OS to run things
-		 * while the test runs.
-		 */
-		if (thread_num + rt_free_cores < cores)
-			set_sched_realtime();
-	}
-
-	offset = thread_num * numsamples * 2;
-	tickinterval = interval * ticksperns;
-
-	while (!hounds) ;
-
-
-	/***************************************************/
-	/* first, warm things up with 1000 test iterations */
-	/***************************************************/
-	main_loops(1000, tickinterval, offset);
-
-	/****************************/
-	/* now do the real sampling */
-	/****************************/
-	total_count = main_loops(numsamples, tickinterval, offset);
-
-	return (void*)total_count;
 }
