@@ -10,7 +10,7 @@ PHONY = linux core akaros
 all: linux
 
 core:
-	cc $(CFLAGS) -falign-functions=4096 -c ftqcore.c -o ftqcore.o
+	cc $(CFLAGS) -falign-functions=4096 -falign-loops=8 -c ftqcore.c -o ftqcore.o
 
 linux: core
 	cc $(CFLAGS) --include linux.h -Wall ftqcore.o ftq.c linux.c -o ftq.linux -lpthread -lrt
