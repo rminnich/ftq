@@ -32,7 +32,7 @@ static int pin_threads = 1;
 static int rt_free_cores = 2;
 static volatile int hounds = 0;
 /* samples: each sample has a timestamp and a work count. */
-static unsigned long long *samples;
+static struct sample *samples;
 static size_t numsamples = DEFAULT_COUNT;
 static double ticksperns;
 static unsigned long long interval = DEFAULT_INTERVAL;
@@ -84,7 +84,7 @@ static void *ftq_thread(void *arg)
 			set_sched_realtime();
 	}
 
-	offset = thread_num * numsamples * 2;
+	offset = thread_num * numsamples;
 	tickinterval = interval * ticksperns;
 
 	while (!hounds) ;
@@ -189,7 +189,7 @@ int main(int argc, char **argv)
 		numsamples = MAX_SAMPLES;
 	}
 	/* allocate sample storage */
-	samples_size = sizeof(unsigned long long) * numsamples * 2 * numthreads;
+	samples_size = sizeof(struct sample) * numsamples * numthreads;
 	samples = mmap(0, samples_size, PROT_READ | PROT_WRITE,
 	               MAP_ANONYMOUS | MAP_PRIVATE | MAP_POPULATE | MAP_LOCKED,
 	               -1, 0);
@@ -276,10 +276,11 @@ int main(int argc, char **argv)
 	fprintf(stderr, "Total count is %lu\n", total_count);
 	if (use_stdout == 1) {
 		header(stdout, nspercycle, 0);
-		for (i = 0, base = samples[0]; i < numsamples; i++) {
+		base = samples[0].ticklast;
+		for (i = 0; i < numsamples; i++) {
 			fprintf(stdout, "%lld %lld\n",
-					(ticks) (nspercycle * (samples[i * 2] - base)),
-					samples[i * 2 + 1]);
+					(ticks) (nspercycle * (samples[i].ticklast - base)),
+					samples[i].count);
 		}
 	} else {
 
@@ -291,11 +292,12 @@ int main(int argc, char **argv)
 				exit(EXIT_FAILURE);
 			}
 			header(fp, nspercycle, j);
-			for (i = 0, base = samples[numsamples * j * 2]; i < numsamples; i++) {
+			base = samples[numsamples * j].ticklast;
+			for (i = 0; i < numsamples; i++) {
 				fprintf(fp, "%lld %lld\n",
 						(ticks) (nspercycle *
-								 (samples[j * numsamples * 2 + i * 2] - base)),
-						samples[j * numsamples * 2 + i * 2 + 1]);
+								 (samples[j * numsamples + i].ticklast - base)),
+						samples[j * numsamples + i].count);
 			}
 			fclose(fp);
 		}

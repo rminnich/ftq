@@ -23,7 +23,7 @@
  * as needed.                                                            *
  *************************************************************************/
 
-unsigned long main_loops(unsigned long long *samples, size_t numsamples,
+unsigned long main_loops(struct sample *samples, size_t numsamples,
                          ticks tickinterval, int offset)
 {
 	int k;
@@ -46,8 +46,8 @@ unsigned long main_loops(unsigned long long *samples, size_t numsamples,
 				count--;
 		}
 
-		samples[(done * 2) + offset] = ticklast;
-		samples[(done * 2) + 1 + offset] = count;
+		samples[done + offset].ticklast = ticklast;
+		samples[done + offset].count = count;
 		total_count += count;
 	}
 	return total_count;

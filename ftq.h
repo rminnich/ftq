@@ -17,8 +17,13 @@
 
 extern int ignore_wire_failures;
 
+struct sample {
+	unsigned long long ticklast;
+	unsigned long long count;
+};
+
 /* ftqcore.c */
-unsigned long main_loops(unsigned long long *samples, size_t numsamples,
+unsigned long main_loops(struct sample *samples, size_t numsamples,
                          ticks tickinterval, int offset);
 
 /* must be provided by OS code */
