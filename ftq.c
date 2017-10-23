@@ -36,11 +36,12 @@ static struct sample *samples;
 static size_t numsamples = DEFAULT_COUNT;
 static double ticksperns;
 static unsigned long long interval = DEFAULT_INTERVAL;
+static unsigned long delay_msec;
 
 void usage(char *av0)
 {
 	fprintf(stderr,
-			"usage: %s [-t threads] [-n samples] [-f frequency] [-h] [-o outname] [-s] [-r] "
+			"usage: %s [-t threads] [-n samples] [-f frequency] [-h] [-o outname] [-s] [-r] [-d delay_msec] "
 			"[-T ticks-per-ns-float] "
 			"[-w (ignore wire failures -- only do this if there is no option"
 			"\n",
@@ -56,9 +57,22 @@ void header(FILE * f, float nspercycle, int thread)
 	fprintf(f, "# x = load(<file name>)\n");
 	fprintf(f, "# pwelch(x(:,2),[],[],[],%f)\n", 1e9 / interval);
 	fprintf(f, "# thread %d, core %d\n", thread, get_pcoreid());
+	fprintf(f, "# start delay %lu msec\n", delay_msec);
 	if (ignore_wire_failures)
 		fprintf(f, "# Warning: not wired to this core; results may be flaky\n");
 	osinfo(f, thread);
+}
+
+static void ftq_mdelay(unsigned long msec)
+{
+	ticks start, end, now;
+
+	start = getticks();
+	end = start + (ticks)(msec * ticksperns * 1000000);
+
+	do {
+		now = getticks();
+	} while (now < end || (now > start && end < start));
 }
 
 static void *ftq_thread(void *arg)
@@ -89,15 +103,8 @@ static void *ftq_thread(void *arg)
 
 	while (!hounds) ;
 
+	ftq_mdelay(delay_msec);
 
-	/***************************************************/
-	/* first, warm things up with 1000 test iterations */
-	/***************************************************/
-	main_loops(samples, MIN(1000, numsamples), tickinterval, offset);
-
-	/****************************/
-	/* now do the real sampling */
-	/****************************/
 	total_count = main_loops(samples, numsamples, tickinterval, offset);
 
 	return (void*)total_count;
@@ -139,10 +146,11 @@ int main(int argc, char **argv)
 			{"ticksperns", 0, 0, 'T'},
 			{"ignore_wire_failures", 0, 0, 'w'},
 			{"realtime", 0, 0, 'r'},
+			{"delay", 0, 0, 'd'},
 			{0, 0, 0, 0}
 		};
 
-		c = getopt_long(argc, argv, "n:hsf:o:t:T:wr", long_options,
+		c = getopt_long(argc, argv, "n:hsf:o:t:T:wrd:", long_options,
 						&option_index);
 		if (c == -1)
 			break;
@@ -174,6 +182,13 @@ int main(int argc, char **argv)
 				break;
 			case 'r':
 				set_realtime = 1;
+				break;
+			case 'd':
+				delay_msec = strtoul(optarg, NULL, 0);
+				if ((long)delay_msec < 0) {
+					fprintf(stderr, "delay_msec must not be negative\n");
+					exit(-1);
+				}
 				break;
 			case 'h':
 			default:
