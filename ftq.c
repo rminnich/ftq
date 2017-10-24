@@ -49,7 +49,7 @@ void usage(char *av0)
 	exit(EXIT_FAILURE);
 }
 
-void header(FILE * f, float nspercycle, int thread)
+void header(FILE * f, int thread)
 {
 	fprintf(f, "# Frequency %f\n", 1e9 / interval);
 	fprintf(f, "# Ticks per ns: %g\n", ticksperns);
@@ -120,9 +120,7 @@ int main(int argc, char **argv)
 	int use_stdout = 0;
 	int rc;
 	pthread_t *threads;
-	ticks start, end, ns;
-	ticks cyclestart, cycleend, cycles, base;
-	float nspercycle;
+	ticks base;
 	size_t samples_size;
 	unsigned long total_count = 0;
 
@@ -238,8 +236,6 @@ int main(int argc, char **argv)
 		/* fault in the array, o/w we'd take the faults after 'start' */
 		memset(threads, 0, sizeof(pthread_t) * numthreads);
 		assert(threads != NULL);
-		start = nsec_ticks();
-		cyclestart = getticks();
 		/* TODO: abstract this nonsense into a call in linux.c/akaros.c/etc */
 		for (i = 0; i < numthreads; i++) {
 			rc = pthread_create(&threads[i], NULL, ftq_thread,
@@ -262,39 +258,21 @@ int main(int argc, char **argv)
 			}
 			total_count += (unsigned long)retval;
 		}
-		cycleend = getticks();
-		end = nsec_ticks();
 	} else {
 		pin_threads = 0;
 		hounds = 1;
-		start = nsec_ticks();
-		cyclestart = getticks();
 		total_count = (unsigned long)ftq_thread(0);
-		cycleend = getticks();
-		end = nsec_ticks();
 	}
 
-	/* We now have the total ns used, and the total ticks used. */
-	ns = end - start;
-	cycles = cycleend - cyclestart;
-	/* TODO: move IO to linux.c, assuming we ever need Plan 9 again.
-	 * but IFDEF is NOT ALLOWED
-	 */
-	fprintf(stderr, "Start %lld end %lld elapsed %lld\n", start, end, ns);
-	fprintf(stderr, "cyclestart %lld cycleend %lld elapsed %lld\n",
-			cyclestart, cycleend, cycles);
-	nspercycle = (1.0 * ns) / cycles;
-	fprintf(stderr, "Avg Cycles(ticks) per ns. is %f; nspercycle is %f\n",
-			(1.0 * cycles) / ns, nspercycle);
-	fprintf(stderr, "Pre-computed ticks per ns: %f\n", ticksperns);
+	fprintf(stderr, "Ticks per ns: %f\n", ticksperns);
 	fprintf(stderr, "Sample frequency is %f\n", 1e9 / interval);
 	fprintf(stderr, "Total count is %lu\n", total_count);
 	if (use_stdout == 1) {
-		header(stdout, nspercycle, 0);
+		header(stdout, 0);
 		base = samples[0].ticklast;
 		for (i = 0; i < numsamples; i++) {
 			fprintf(stdout, "%lld %lld\n",
-					(ticks) (nspercycle * (samples[i].ticklast - base)),
+					(ticks)((samples[i].ticklast - base) / ticksperns),
 					samples[i].count);
 		}
 	} else {
@@ -306,12 +284,12 @@ int main(int argc, char **argv)
 				perror("can not create file");
 				exit(EXIT_FAILURE);
 			}
-			header(fp, nspercycle, j);
+			header(fp, j);
 			base = samples[numsamples * j].ticklast;
 			for (i = 0; i < numsamples; i++) {
 				fprintf(fp, "%lld %lld\n",
-						(ticks) (nspercycle *
-								 (samples[j * numsamples + i].ticklast - base)),
+						(ticks)((samples[j * numsamples + i].ticklast - base) /
+						        ticksperns),
 						samples[j * numsamples + i].count);
 			}
 			fclose(fp);
