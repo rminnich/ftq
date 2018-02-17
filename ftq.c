@@ -1,7 +1,7 @@
 /**
  * ftq.c : Fixed Time Quantum microbenchmark
  *
- * Written by Matthew Sottile (matt@cs.uoregon.edu)
+ * Written by Matthew Sottile (mjsottile@gmail.com)
  *
  * This is a complete rewrite of the original tscbase code by
  * Ron and Matt, in order to use a better set of portable timers,
