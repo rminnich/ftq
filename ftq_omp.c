@@ -1,7 +1,7 @@
 /**
   * ftq_omp.c : Fixed Time Quantum microbenchmark
   *
-  * Written by Matthew Sottile (matt@cs.uoregon.edu)
+  * Written by Matthew Sottile (mjsottile@gmail.com)
   * OpenMP added by Brent Gorda (bgorda@llnl.gov)
   *
   * Licensed under the terms of the GNU Public Licence.  See LICENCE_GPL
