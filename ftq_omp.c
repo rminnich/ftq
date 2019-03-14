@@ -57,8 +57,9 @@
   */
 void usage(char *av0)
 {
-	fprintf(stderr, "usage: %s [-n samples] [-i bits] [-h] [-o outname] [-s]\n",
-			av0);
+	fprintf(stderr,
+		"usage: %s [-n samples] [-i bits] [-h] [-o outname] [-s]\n",
+		av0);
 	exit(EXIT_FAILURE);
 }
 
@@ -83,8 +84,8 @@ int main(int argc, char **argv)
 	ticks now, last, endinterval;
 	unsigned long long *samples;	/* [MAX_SAMPLES*2]; */
 #ifdef MULTIITER
-	register int k;				/* redefined below to be local in scope and 
-								   therefore omp local */
+	register int k;		/* redefined below to be local in scope and 
+				   therefore omp local */
 #endif
 
 	sprintf(fname_prefix, "ftq");
@@ -106,7 +107,8 @@ int main(int argc, char **argv)
 			{0, 0, 0, 0}
 		};
 
-		c = getopt_long(argc, argv, "n:hsi:o:", long_options, &option_index);
+		c = getopt_long(argc, argv, "n:hsi:o:", long_options,
+				&option_index);
 		if (c == -1)
 			break;
 
@@ -159,15 +161,14 @@ int main(int argc, char **argv)
 		int tid = omp_get_thread_num();
 		samples[tid] = tid;
 		last = getticks();
-		endinterval = (last + interval_length) & (~(interval_length - 1));
+		endinterval = (last + interval_length)
+			      & (~(interval_length - 1));
 
-		//fprintf(stderr, "hi from tid=%d numsamples = %d\n", tid, numsamples);
 		last = getticks();
 
 #pragma omp for schedule(static) nowait
 		for (done = 0; done < numsamples; done++) {
 			count = 0;
-			//fprintf(stderr, "hi from tid=%d numsamples = %d\n", tid, numsamples);
 
 			for (now = last; now < endinterval;) {
 #ifdef MULTIITER
@@ -182,12 +183,12 @@ int main(int argc, char **argv)
 				now = getticks();
 			}	/* for now=last ... */
 
-			//fprintf(stderr, "hi from tid=%d sample[%d] = %d\n", tid, done, samples[done]);
 			samples[done * 2] = last;
 			samples[done * 2 + 1] = count;
 			last = getticks();
 
-			endinterval = (last + interval_length) & (~(interval_length - 1));
+			endinterval = (last + interval_length)
+				      & (~(interval_length - 1));
 		}	/* OMP parallel for */
 #ifdef _WITH_OMP
 

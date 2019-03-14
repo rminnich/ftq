@@ -17,8 +17,9 @@
 
 void usage(char *av0)
 {
-	fprintf(stderr, "usage: %s [-n samples] [-i bits] [-h] [-o outname] [-s]\n",
-			av0);
+	fprintf(stderr,
+		"usage: %s [-n samples] [-i bits] [-h] [-o outname] [-s]\n",
+		av0);
 	exit(EXIT_FAILURE);
 }
 

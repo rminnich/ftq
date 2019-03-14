@@ -215,8 +215,7 @@ int main(int argc, char **argv)
 	memset(samples, 0, samples_size);
 
 	if (use_stdout == 1 && numthreads > 1) {
-		fprintf(stderr,
-				"ERROR: cannot output to stdout for more than one thread.\n");
+		fprintf(stderr, "ERROR: cannot output to stdout for more than one thread.\n");
 		exit(EXIT_FAILURE);
 	}
 
@@ -236,24 +235,28 @@ int main(int argc, char **argv)
 		/* fault in the array, o/w we'd take the faults after 'start' */
 		memset(threads, 0, sizeof(pthread_t) * numthreads);
 		assert(threads != NULL);
-		/* TODO: abstract this nonsense into a call in linux.c/akaros.c/etc */
+		/* TODO: abstract this nonsense into a call in
+		 * linux.c/akaros.c/etc */
 		for (i = 0; i < numthreads; i++) {
 			rc = pthread_create(&threads[i], NULL, ftq_thread,
-								(void *)(intptr_t) i);
+					    (void *)(intptr_t) i);
 			if (rc) {
-				fprintf(stderr, "ERROR: pthread_create() failed.\n");
+				fprintf(stderr,
+					"ERROR: pthread_create() failed.\n");
 				exit(EXIT_FAILURE);
 			}
 		}
 
 		hounds = 1;
-		/* TODO: abstract this nonsense into a call in linux.c/akaros.c/etc */
+		/* TODO: abstract this nonsense into a call in
+		 * linux.c/akaros.c/etc */
 		for (i = 0; i < numthreads; i++) {
 			void *retval;
 
 			rc = pthread_join(threads[i], &retval);
 			if (rc) {
-				fprintf(stderr, "ERROR: pthread_join() failed.\n");
+				fprintf(stderr,
+					"ERROR: pthread_join() failed.\n");
 				exit(EXIT_FAILURE);
 			}
 			total_count += (unsigned long)retval;
@@ -272,8 +275,8 @@ int main(int argc, char **argv)
 		base = samples[0].ticklast;
 		for (i = 0; i < numsamples; i++) {
 			fprintf(stdout, "%lld %lld\n",
-					(ticks)((samples[i].ticklast - base) / ticksperns),
-					samples[i].count);
+				(ticks)((samples[i].ticklast - base)
+					/ ticksperns), samples[i].count);
 		}
 	} else {
 
@@ -288,9 +291,9 @@ int main(int argc, char **argv)
 			base = samples[numsamples * j].ticklast;
 			for (i = 0; i < numsamples; i++) {
 				fprintf(fp, "%lld %lld\n",
-						(ticks)((samples[j * numsamples + i].ticklast - base) /
-						        ticksperns),
-						samples[j * numsamples + i].count);
+				  (ticks)((samples[j * numsamples + i].ticklast
+					   - base) / ticksperns),
+				  samples[j * numsamples + i].count);
 			}
 			fclose(fp);
 		}
