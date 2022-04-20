@@ -9,6 +9,7 @@
 #define DEFAULT_INTERVAL 100000
 #define MAX_BITS       30
 #define MIN_BITS       3
+#define DEFAULT_OUTNAME "ftq"
 
 /**
  * Work grain, which is now fixed. 

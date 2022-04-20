@@ -37,15 +37,19 @@ static size_t numsamples = DEFAULT_COUNT;
 static double ticksperns;
 static unsigned long long interval = DEFAULT_INTERVAL;
 static unsigned long delay_msec;
+static int numthreads = 1;
+static unsigned long total_count;
+static unsigned int max_work;
 
 void usage(char *av0)
 {
 	fprintf(stderr,
 			"usage: %s [-t threads] [-n samples] [-f frequency] [-h] [-o outname] [-s] [-r] [-d delay_msec] "
 			"[-T ticks-per-ns-float] "
-			"[-w (ignore wire failures -- only do this if there is no option"
+			"[-w (ignore wire failures -- only do this if there is no option]"
 			"\n",
 			av0);
+	fprintf(stderr, "defaults: %s -t %d -n %d -f %lld -o \"%s\" -d %ld\n", av0, numthreads, (int)numsamples, interval, DEFAULT_OUTNAME, delay_msec);
 	exit(EXIT_FAILURE);
 }
 
@@ -58,6 +62,9 @@ void header(FILE * f, int thread)
 	fprintf(f, "# pwelch(x(:,2),[],[],[],%f)\n", 1e9 / interval);
 	fprintf(f, "# thread %d, core %d\n", thread, get_pcoreid());
 	fprintf(f, "# start delay %lu msec\n", delay_msec);
+	fprintf(f, "# Total count is %lu\n", total_count);
+	fprintf(f, "# Max possible work is %u\n", max_work);
+	fprintf(f, "# Fraction is %g\n", (1.0 * total_count) / max_work);
 	if (ignore_wire_failures)
 		fprintf(f, "# Warning: not wired to this core; results may be flaky\n");
 	osinfo(f, thread);
@@ -115,17 +122,16 @@ int main(int argc, char **argv)
 	/* local variables */
 	static char fname[8192], outname[255];
 	int i, j;
-	int numthreads = 1, use_threads = 0;
+	int use_threads = 0;
 	FILE *fp;
 	int use_stdout = 0;
 	int rc;
 	pthread_t *threads;
 	ticks base;
 	size_t samples_size;
-	unsigned long total_count = 0;
 
 	/* default output name prefix */
-	sprintf(outname, "ftq");
+	sprintf(outname, DEFAULT_OUTNAME);
 
 	/*
 	 * getopt_long to parse command line options.
@@ -270,6 +276,18 @@ int main(int argc, char **argv)
 	fprintf(stderr, "Ticks per ns: %f\n", ticksperns);
 	fprintf(stderr, "Sample frequency is %f\n", 1e9 / interval);
 	fprintf(stderr, "Total count is %lu\n", total_count);
+	for (j = 0; j < numthreads; j++) {
+		for (i = 0; i < numsamples; i++) {
+			int ix = j * numsamples + i;
+			if (samples[ix].count > max_work) {
+				max_work = samples[ix].count;
+			}
+		}
+	}
+	max_work *= numthreads * numsamples;
+	fprintf(stderr, "Max possible work is %u\n", max_work);
+	fprintf(stderr, "Fraction is %g\n", (1.0 * total_count) / max_work);
+
 	if (use_stdout == 1) {
 		header(stdout, 0);
 		base = samples[0].ticklast;
@@ -290,10 +308,10 @@ int main(int argc, char **argv)
 			header(fp, j);
 			base = samples[numsamples * j].ticklast;
 			for (i = 0; i < numsamples; i++) {
+				int ix = j * numsamples + i;
 				fprintf(fp, "%lld %lld\n",
-				  (ticks)((samples[j * numsamples + i].ticklast
-					   - base) / ticksperns),
-				  samples[j * numsamples + i].count);
+					(ticks)((samples[ix].ticklast - base) / ticksperns),
+					samples[ix].count);
 			}
 			fclose(fp);
 		}
