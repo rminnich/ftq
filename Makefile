@@ -1,4 +1,5 @@
-CC = cc
+CC = gcc
+CXX= # e.g. riscv64-linux-gnu-
 ACC = x86_64-ucb-akaros-gcc
 CFLAGS = -Wall -O2
 ACFLAGS = -Wall -O2 -Dros
@@ -10,11 +11,11 @@ PHONY = linux core akaros
 all: linux
 
 core:
-	cc $(CFLAGS) -falign-functions=4096 -falign-loops=8 -c ftqcore.c -o ftqcore.o
+	$(CXX)$(CC) $(CFLAGS) -falign-functions=4096 -falign-loops=8 -c ftqcore.c -o ftqcore.o
 
 linux: core
-	cc $(CFLAGS) --include linux.h -Wall ftqcore.o ftq.c linux.c -o ftq.linux -lpthread -lrt
-	cc $(CFLAGS) --include linux.h -Wall ftqcore.o ftq.c linux.c -o ftq.static.linux -lpthread -lrt -static
+	$(CXX)$(CC) $(CFLAGS) --include linux.h -Wall ftqcore.o ftq.c linux.c -o ftq.linux -lpthread -lrt
+	$(CXX)$(CC) $(CFLAGS) --include linux.h -Wall ftqcore.o ftq.c linux.c -o ftq.static.linux -lpthread -lrt -static
 
 akaros: core
 	$(ACC) $(ACFLAGS) --include akaros.h -Wall ftqcore.o ftq.c akaros.c -o ftq.akaros -lpthread
