@@ -392,3 +392,21 @@ typedef long long ticks;
 INLINE_ELAPSED(inline)
 #define HAVE_TICK_COUNTER
 #endif
+
+/*----------------------------------------------------------------*/
+/*
+ * RV64 cycle counter
+ */
+#if defined(__GNUC__) && defined(__riscv)  && !defined(HAVE_TICK_COUNTER)
+typedef unsigned long long ticks;
+
+static __inline__ ticks getticks(void)
+{
+	ticks cycles;
+	__asm__ volatile("rdtime %0" : "=r"(cycles));
+	return cycles;
+}
+
+INLINE_ELAPSED(__inline__)
+#define HAVE_TICK_COUNTER
+#endif
