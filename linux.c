@@ -117,7 +117,6 @@ double compute_ticksperns(void)
 	ns = timeend - timestart;
 	el = tickend - tickstart;
 	convert = (1.0 * el) / ns;
-	printf("ticks per ns %g\n", convert);
 	return convert;
 }
 
