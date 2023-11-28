@@ -121,14 +121,17 @@ The parameters are as follows:
 
   -s : Dump output to the STDOUT
   -o : Prefix for output data files
-  -i : Bits in sampling interval limits
+  -f : Frequency of the sampling.
+       You can determine the time interval as 1/f.
+       i.e., with the default frequency of 10 Khz,
+       the interval is 100 microseconds.
   -n : Number of samples to take
   -t : number of threads. Default 1.
   -h : Usage
 
 Let's consider a simple run like this:
 
-% ./ftq -o testrun -i 20 -n 1000
+% ./ftq -o testrun -f 10000 -n 1000
 
 What does this produce?  If we look at the current directory, we should
 see a new file: testrun.dat.  This is the output from FTQ.

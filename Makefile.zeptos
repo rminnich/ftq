@@ -29,7 +29,7 @@ threads:
 	$(CC) $(CFLAGS) -funroll-loops ftq.c -D_WITH_PTHREADS_ -DCORE63 -o t_ftq63 -lpthread
 
 result: 
-	cqsub  -n 1 -t 59 -k zeptoos-bigmem   ./ftq63 -i 20 -n 524288
+	cqsub  -n 1 -t 59 -k zeptoos-bigmem   ./ftq63 -f 10000 -n 524288
 
 
 clean:
