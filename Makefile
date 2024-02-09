@@ -6,7 +6,7 @@ ACFLAGS = -Wall -O2 -Dros
 LIBS =
 LDFLAGS = $(USER_OPT)
 
-PHONY = linux core akaros
+PHONY = core linux akaros illumos clean
 
 all: linux
 
@@ -20,7 +20,10 @@ linux: core
 akaros: core
 	$(ACC) $(ACFLAGS) --include akaros.h -Wall ftqcore.o ftq.c akaros.c -o ftq.akaros -lpthread
 
+illumos: core
+	$(CXX)$(CC) $(CFLAGS) --include illumos.h -Wall ftqcore.o ftq.c illumos.c -o ftq.illumos -lpthread
+
 clean:
-	rm -f *.o t_ftq ftq ftq.linux ftq.static.linux ftq.akaros *~
+	rm -f *.o t_ftq ftq ftq.linux ftq.static.linux ftq.akaros ftq.illumos *~
 
 .PHONY: $(PHONY)
