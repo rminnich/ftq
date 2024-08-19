@@ -304,11 +304,10 @@ int main(int argc, char **argv)
 		MPI_Gather(&work, 1,  MPI_UNSIGNED_LONG_LONG, &samples->count[sample * size], size,  MPI_UNSIGNED_LONG_LONG, 0, comm);
 	}
 	
-	fprintf(stderr, "Ticks per ns: %f\n", ticksperns);
-	fprintf(stderr, "Sample frequency is %f\n", 1e9 / interval);
-	fprintf(stderr, "Total count is %lu\n", total_count);
-
-
+	if (rank == 0) {
+		fprintf(stderr, "Ticks per ns: %f\n", ticksperns);
+		fprintf(stderr, "Sample frequency is %f\n", 1e9 / interval);
+		fprintf(stderr, "Total count is %lu\n", total_count);
 		header(stdout, 0);
 		base = samples[0].ticklast;
 		for (i = 0; i < numsamples; i++) {
@@ -317,4 +316,5 @@ int main(int argc, char **argv)
 				fprintf(stdout, "%lld,",samples[i].count[j]);
 			}
 		}
+	}
 }
