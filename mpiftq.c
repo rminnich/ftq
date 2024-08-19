@@ -250,7 +250,8 @@ int main(int argc, char **argv)
 	printf("Rank %d / %d here\n", rank, size);
 	/* allocate sample storage */
 	/* the first part is the structs, the second part the data arrays */
-	samples_size = sizeof(struct sample) * numsamples * size;
+	samples_size = sizeof(struct sample) * numsamples;
+	printf("Allocate %d bytes for samples\n", samples_size);
 	samples = mmap(0, samples_size, PROT_READ | PROT_WRITE,
 	               MAP_ANONYMOUS | MAP_PRIVATE | MAP_POPULATE,
 	               -1, 0);
@@ -263,6 +264,7 @@ int main(int argc, char **argv)
 		perror("Failed to mlock");
 
 	data_size = size * numsamples * sizeof(unsigned long long);
+	printf("Allocate %d bytes for data\n", data_size);
 	data = mmap(0, data_size, PROT_READ | PROT_WRITE,
 	               MAP_ANONYMOUS | MAP_PRIVATE | MAP_POPULATE,
 	               -1, 0);
