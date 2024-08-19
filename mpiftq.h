@@ -1,10 +1,6 @@
 #pragma once
 
 #include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-#include <assert.h>
 #include "cycle.h"
 
 /** defaults **/
@@ -24,7 +20,7 @@ extern int ignore_wire_failures;
 
 struct sample {
 	unsigned long long ticklast;
-	unsigned long long count;
+	unsigned long long *count;
 };
 
 /* ftqcore.c */

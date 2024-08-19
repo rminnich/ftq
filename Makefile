@@ -15,6 +15,9 @@ core:
 
 linux: core
 	$(CXX)$(CC) $(CFLAGS) --include linux.h -Wall ftqcore.o ftq.c linux.c -o ftq.linux -lpthread -lrt
+
+# I hate the fact that so many linux have broken this, but there we are.
+static: core
 	$(CXX)$(CC) $(CFLAGS) --include linux.h -Wall ftqcore.o ftq.c linux.c -o ftq.static.linux -lpthread -lrt -static
 
 akaros: core
@@ -25,5 +28,8 @@ illumos: core
 
 clean:
 	rm -f *.o t_ftq ftq ftq.linux ftq.static.linux ftq.akaros ftq.illumos *~
+
+mpiftq:mpiftq.c ftq.h
+	mpicc -o mpiftq mpiftq.c
 
 .PHONY: $(PHONY)
