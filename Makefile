@@ -26,4 +26,7 @@ illumos: core
 clean:
 	rm -f *.o t_ftq ftq ftq.linux ftq.static.linux ftq.akaros ftq.illumos *~
 
+mpiftq:mpiftq.c ftq.h
+	mpicc -o mpiftq mpiftq.c 
+
 .PHONY: $(PHONY)
