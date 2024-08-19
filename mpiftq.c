@@ -247,6 +247,7 @@ int main(int argc, char **argv)
 	int size;
 	MPI_Comm_size(MPI_COMM_WORLD, &size);
 
+	printf("Rank %d / %d here\n", rank, size);
 	/* allocate sample storage */
 	/* the first part is the structs, the second part the data arrays */
 	samples_size = sizeof(struct sample) * numsamples * size;
