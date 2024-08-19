@@ -38,7 +38,8 @@ static int rt_free_cores = 2;
 static volatile int hounds = 0;
 /* samples: each sample has a timestamp and a work count. */
 static struct sample *samples;
-static size_t numsamples = DEFAULT_COUNT;
+static unsigned long long *data;
+static size_t numsamples = 2; // DEFAULT_COUNT;
 static double ticksperns;
 static unsigned long long interval = DEFAULT_INTERVAL;
 static unsigned long delay_msec;
@@ -159,7 +160,7 @@ int main(int argc, char **argv)
 	int rc;
 	pthread_t *threads;
 	ticks base;
-	size_t samples_size;
+	size_t samples_size, data_size;
 
 	MPI_Init(&argc,&argv);
 #ifdef ROCKY
@@ -249,8 +250,6 @@ int main(int argc, char **argv)
 	/* allocate sample storage */
 	/* the first part is the structs, the second part the data arrays */
 	samples_size = sizeof(struct sample) * numsamples * size;
-	int data_size = size * numsamples * sizeof(unsigned long long);
-	int total_size = samples_size + data_size;
 	samples = mmap(0, samples_size, PROT_READ | PROT_WRITE,
 	               MAP_ANONYMOUS | MAP_PRIVATE | MAP_POPULATE,
 	               -1, 0);
@@ -262,8 +261,15 @@ int main(int argc, char **argv)
 	if (mlock(samples, samples_size) < 0)
 		perror("Failed to mlock");
 
+	data_size = size * numsamples * sizeof(unsigned long long);
+	data = mmap(0, data_size, PROT_READ | PROT_WRITE,
+	               MAP_ANONYMOUS | MAP_PRIVATE | MAP_POPULATE,
+	               -1, 0);
+	if (mlock(data, data_size) < 0)
+		perror("Failed to mlock");
 	/* in case mmap failed or MAP_POPULATE didn't populate */
 	memset(samples, 0, samples_size);
+	memset(data, 0, data_size);
 	/* set up the data arrays. */
 	unsigned long long *data = (unsigned long long *)(&((unsigned char *)samples)[samples_size]);
 	for(int i = 0; i < numsamples; i++)
@@ -295,7 +301,7 @@ int main(int argc, char **argv)
 				MPI_Ibcast(&done, 1, MPI_INT, 0, comm, &r);
 			}
 		}
-		MPI_Gather(&work, 1,  MPI_UNSIGNED_LONG_LONG, samples->count, size,  MPI_UNSIGNED_LONG_LONG, 0, comm);
+		MPI_Gather(&work, 1,  MPI_UNSIGNED_LONG_LONG, &samples->count[sample * size], size,  MPI_UNSIGNED_LONG_LONG, 0, comm);
 	}
 	
 	fprintf(stderr, "Ticks per ns: %f\n", ticksperns);
