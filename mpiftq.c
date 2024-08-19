@@ -161,6 +161,7 @@ int main(int argc, char **argv)
 	ticks base;
 	size_t samples_size;
 
+	MPI_Init(&argc,&argv);
 #ifdef ROCKY
 	/*
 	 * getopt_long to parse command line options.
