@@ -279,6 +279,7 @@ int main(int argc, char **argv)
 		samples[i].count = &data[i*numsamples];
 	unsigned long long tickinterval = (unsigned long long)(1e9 / 1048576);
 
+	if (0)
 	for (int sample = 0; sample < numsamples; sample++) {
 		int done = 0;
 		unsigned long long work = 0;
