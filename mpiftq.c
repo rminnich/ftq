@@ -279,11 +279,12 @@ int main(int argc, char **argv)
 		samples[i].count = &data[i*numsamples];
 	unsigned long long tickinterval = (unsigned long long)(1e9 / 1048576);
 
-	if (0)
 	for (int sample = 0; sample < numsamples; sample++) {
 		int done = 0;
 		unsigned long long work = 0;
+		printf("BCAST...");
 		MPI_Bcast(&done, 1, MPI_INT, 0, comm);
+		printf("DONE\n");
 		if (rank == 0) {
 			ticks ticknow, ticklast, tickend;
 			tickend = getticks();
@@ -292,8 +293,11 @@ int main(int argc, char **argv)
 				ftq_mdelay(1);
 			}
 			done = 1;
+			printf("RANK 0 .. BCAST...");
 			MPI_Bcast(&done, 1, MPI_INT, 0, comm);
+			printf("RANK 0 DONE\n");
 		} else {
+			printf("RANK %d: work\n", rank);
 			while (! done)  {
 				work++;
 				int k, count;
@@ -302,12 +306,17 @@ int main(int argc, char **argv)
 				for (k = 0; k < (ITERCOUNT - 1); k++)
 					count--;
 				MPI_Request r;
+				printf("RANK %d: IBCAST\n", rank);
 				MPI_Ibcast(&done, 1, MPI_INT, 0, comm, &r);
+				printf("RANK %d: done %d\n", rank, done);
 			}
 		}
+		printf("RANK %d: gather\n", rank);
 		MPI_Gather(&work, 1,  MPI_UNSIGNED_LONG_LONG, &samples->count[sample * size], size,  MPI_UNSIGNED_LONG_LONG, 0, comm);
+		printf("RANK %d: gather DONE\n", rank);
 	}
 	
+	printf("RANK %d: all done\n", rank);
 	if (rank == 0) {
 		fprintf(stderr, "Ticks per ns: %f\n", ticksperns);
 		fprintf(stderr, "Sample frequency is %f\n", 1e9 / interval);
