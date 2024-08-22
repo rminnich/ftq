@@ -32,4 +32,7 @@ clean:
 mpiftq:mpiftq.c ftq.h
 	mpicc -o mpiftq mpiftq.c
 
+mpibarrier:mpibarrier.c ftq.h
+	mpicc -o mpibarrier mpibarrier.c
+
 .PHONY: $(PHONY)
