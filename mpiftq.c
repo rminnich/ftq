@@ -266,8 +266,6 @@ int main(int argc, char **argv)
 	V("%d DONE\n", rank);
 	ticks tickend;
 	tickend = base = getticks();
-	// let's run for a few minutes. Samples every 10ms, 100 per second, 200 seconds, that's 20K samples.
-	numsamples = 20000;
 	for (int sample = 0; sample < numsamples; sample++) {
 		count = 0;
 		ticks ticknow, ticklast;
