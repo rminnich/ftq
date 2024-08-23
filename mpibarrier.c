@@ -279,8 +279,7 @@ int main(int argc, char **argv)
 		samples[sample].count[0] = getticks() - ticklast;
 		if (rank == 0)
 		for (;ticknow < tickend; ticknow = getticks()) {
-			const struct timespec t;
-			if (0)
+			const struct timespec t = {0, 20000};
 			if (nanosleep(&t, NULL) < 0) {
 				perror("nanosleep");
 			}
