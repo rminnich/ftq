@@ -25,6 +25,7 @@
 #include "mpiftq.h"
 #include <sys/mman.h>
 #include <sys/param.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <mpi.h>
@@ -273,15 +274,15 @@ int main(int argc, char **argv)
 		ticknow = ticklast = getticks();
 		tickend += tickinterval;
 		V("Rank %d: ticknow %lld ticklast %lld tickinterval %lld tickend %lld\n", rank, ticknow, ticklast, tickinterval, tickend);
-		MPI_Gather(&count, 1,  MPI_UNSIGNED_LONG_LONG, samples[sample].count, 1,  MPI_UNSIGNED_LONG_LONG, 0, comm);
+		MPI_Barrier(comm);
 		samples[sample].ticklast = ticklast;
 		samples[sample].count[0] = getticks() - ticklast;
 		if (rank == 0)
 		for (;ticknow < tickend; ticknow = getticks()) {
-			for (k = 0; k < ITERCOUNT; k++)
-				count++;
-			for (k = 0; k < (ITERCOUNT - 1); k++)
-				count--;
+			const struct timespec t;
+			if (nanosleep(&t, NULL) < 0) {
+				perror("nanosleep");
+			}
 		}
 	}
 
