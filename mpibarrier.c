@@ -280,6 +280,7 @@ int main(int argc, char **argv)
 		if (rank == 0)
 		for (;ticknow < tickend; ticknow = getticks()) {
 			const struct timespec t;
+			if (0)
 			if (nanosleep(&t, NULL) < 0) {
 				perror("nanosleep");
 			}
