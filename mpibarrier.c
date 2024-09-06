@@ -269,7 +269,6 @@ int main(int argc, char **argv)
 	tickend = base = getticks();
 	// Rank 0 does a full barrier, and times it, for a baseline.
 	for (int sample = 0; sample < numsamples; sample++) {
-		count = 0;
 		ticks ticknow, ticklast;
 		ticknow = ticklast = getticks();
 		tickend += tickinterval;
@@ -277,8 +276,10 @@ int main(int argc, char **argv)
 		MPI_Barrier(comm);
 		samples[sample].ticklast = ticklast;
 		samples[sample].count[0] = getticks() - ticklast;
-		if (rank == 0)
-		for (;ticknow < tickend; ticknow = getticks()) {
+
+		// Only rank 0 does work; all other ranks immediately do the barrier.
+		// This removes any need for synchronized clocks.
+		for (;rank == 0 && ticknow < tickend; ticknow = getticks()) {
 			const struct timespec t = {0, 20000};
 			if (nanosleep(&t, NULL) < 0) {
 				perror("nanosleep");
