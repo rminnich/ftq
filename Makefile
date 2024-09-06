@@ -35,4 +35,7 @@ mpiftq:mpiftq.c ftq.h
 mpibarrier:mpibarrier.c ftq.h
 	mpicc -o mpibarrier mpibarrier.c
 
+cudabarrier:cudabarrier.c ftq.h
+	mpicxx -o cudabarrier cudabarrier.c  -L /usr/local/cuda/lib64/ -lcudart
+
 .PHONY: $(PHONY)
