@@ -13,7 +13,6 @@
 #include <string.h>
 #include <time.h>
 #include <sched.h>
-#include "cycle.h"
 
 /*
  * use cycle timers from FFTW3 (http://www.fftw.org/).  this defines a
