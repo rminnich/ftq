@@ -1,7 +1,8 @@
 CC ?= 
 CROSS ?= # e.g. riscv64-linux-gnu-
 ACC ?= x86_64-ucb-akaros-gcc
-CFLAGS ?= -Wall -O2
+# what a mess.
+CFLAGS ?= -Wall -O2 -DHAVE_ARMV8_PMCCNTR_EL0
 ACFLAGS ?= -Wall -O2 -Dros
 LIBS ?=
 LDFLAGS ?= $(USER_OPT)

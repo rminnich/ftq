@@ -410,3 +410,34 @@ static __inline__ ticks getticks(void)
 INLINE_ELAPSED(__inline__)
 #define HAVE_TICK_COUNTER
 #endif
+
+// shitshow. Always. But we are NOT using GNU config tools. Ever.
+#if 0
+#if defined(__aarch64__) && (defined(__APPLE__) || defined(HAVE_ARMV8_CNTVCT_EL0)) && !defined(HAVE_ARMV8_PMCCNTR_EL0)
+typedef unsigned long long ticks;
+static inline ticks getticks(void)
+{
+  unsigned long long Rt;
+  asm volatile("mrs %0,  CNTVCT_EL0" : "=r" (Rt));
+  return Rt;
+}
+INLINE_ELAPSED(inline)
+#define HAVE_TICK_COUNTER
+#endif
+#endif
+
+#if defined(__aarch64__) && defined(HAVE_ARMV8_PMCCNTR_EL0)   && !defined(HAVE_TICK_COUNTER)
+typedef unsigned long long ticks;
+static __inline__ ticks getticks(void)
+{
+        unsigned long long cc = 0;
+	// The Right Way To Do This: probe.
+	// catch the SIGILL to pick which one to use.
+	// Someday.
+	asm volatile("mrs %0,  CNTVCT_EL0" : "=r" (cc));
+        //asm volatile("mrs %0, PMCCNTR_EL0" : "=r"(cc));
+        return cc;
+}
+INLINE_ELAPSED(inline)
+#define HAVE_TICK_COUNTER
+#endif
