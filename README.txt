@@ -41,6 +41,10 @@ still suck.
 The ftq_omp.c code is an experimental OpenMP-based FTQ contributed by
 Brent Gorda from LLNL.
 
+Cross compiling is controlled by environment variables.
+To cross compile the statically linked target for, e.g., aarch64:
+CC=gcc CROSS=aarch64-linux-gnu- make static
+
 1.  What is FTQ?
 ----------------
 
