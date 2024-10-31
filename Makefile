@@ -7,6 +7,9 @@ ACFLAGS ?= -Wall -O2 -Dros
 LIBS ?=
 LDFLAGS ?= $(USER_OPT)
 
+# make with this set to y for extra perf msr recording.
+X86_PERF_MSR ?= n
+
 PHONY = core linux akaros illumos clean
 
 all: linux

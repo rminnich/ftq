@@ -25,6 +25,9 @@ extern int ignore_wire_failures;
 struct sample {
 	unsigned long long ticklast;
 	unsigned long long count;
+#if X86_PERF_MSR==y
+	unsigned long long aperf, mperf;
+#endif
 };
 
 /* ftqcore.c */

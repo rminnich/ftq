@@ -18,6 +18,10 @@
  */
 #include "ftq.h"
 
+/* The goal here was to keep this largely kernel-independent. But:
+ * 99.9999% of the runs are on Linux, and so this is just convenient.
+ */
+
 /*************************************************************************
  * All time base here is in ticks; computation to ns is done elsewhere   *
  * as needed.                                                            *
@@ -31,7 +35,11 @@ unsigned long main_loops(struct sample *samples, size_t numsamples,
 	volatile unsigned long long count;
 	unsigned long total_count = 0;
 	ticks ticknow, ticklast, tickend;
-
+#if X86_PERF_MSR==y
+#include "linux.h"
+	int coreid = get_pcoreid();
+	int msrfd = msrfd(coreid);
+#endif
 	tickend = getticks();
 
 	for (done = 0; done < numsamples; done++) {
@@ -48,6 +56,10 @@ unsigned long main_loops(struct sample *samples, size_t numsamples,
 
 		samples[done + offset].ticklast = ticklast;
 		samples[done + offset].count = count;
+#if X86_PERF_MSR==y
+		samples[done + offset].aperf = aperf(msrfd);
+		samples[done + offset].mperf = mperf(msrfd);
+#endif
 		total_count += count;
 	}
 	return total_count;
