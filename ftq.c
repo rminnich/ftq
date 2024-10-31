@@ -65,9 +65,14 @@ void header(FILE * f, int thread)
 	fprintf(f, "# Total count is %llu\n", total_count);
 	fprintf(f, "# Max possible work is %llu\n", max_work);
 	fprintf(f, "# Fraction is %g\n", (1.0 * total_count) / max_work);
+	osinfo(f, thread);
 	if (ignore_wire_failures)
 		fprintf(f, "# Warning: not wired to this core; results may be flaky\n");
-	osinfo(f, thread);
+	fprintf(f, "# Time(ns) work");
+#ifdef X86_PERF_MSR
+	fprintf(f, " aperf mperf");
+#endif
+	fprintf(f, "\n");
 }
 
 static void ftq_mdelay(unsigned long msec)
@@ -312,9 +317,11 @@ int main(int argc, char **argv)
 			base = samples[numsamples * j].ticklast;
 			for (i = 0; i < numsamples; i++) {
 				int ix = j * numsamples + i;
-				fprintf(fp, "%lld %lld\n",
-					(ticks)((samples[ix].ticklast - base) / ticksperns),
-					samples[ix].count);
+				fprintf(fp, "%lld %lld", (ticks)((samples[ix].ticklast - base) / ticksperns), samples[ix].count);
+#ifdef X86_PERF_MSR
+				fprintf(fp, " %lld %lld", samples[ix].aperf, samples[ix].mperf);
+#endif
+				fprintf(fp, "\n");
 			}
 			fclose(fp);
 		}

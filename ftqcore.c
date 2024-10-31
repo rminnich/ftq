@@ -35,10 +35,9 @@ unsigned long main_loops(struct sample *samples, size_t numsamples,
 	volatile unsigned long long count;
 	unsigned long total_count = 0;
 	ticks ticknow, ticklast, tickend;
-#if X86_PERF_MSR==y
-#include "linux.h"
+#ifdef X86_PERF_MSR
 	int coreid = get_pcoreid();
-	int msrfd = msrfd(coreid);
+	int fd = msrfd(coreid);
 #endif
 	tickend = getticks();
 
@@ -56,9 +55,9 @@ unsigned long main_loops(struct sample *samples, size_t numsamples,
 
 		samples[done + offset].ticklast = ticklast;
 		samples[done + offset].count = count;
-#if X86_PERF_MSR==y
-		samples[done + offset].aperf = aperf(msrfd);
-		samples[done + offset].mperf = mperf(msrfd);
+#ifdef X86_PERF_MSR
+		samples[done + offset].aperf = smicount(fd);
+		//samples[done + offset].mperf = mperf(fd);
 #endif
 		total_count += count;
 	}

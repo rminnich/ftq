@@ -37,7 +37,6 @@
 
 #include <sched.h>
 
-#if 0
 static inline int get_pcoreid(void)
 {
 	return sched_getcpu();
@@ -63,9 +62,11 @@ static unsigned long rdmsr(int fd, uint32_t msr)
 static inline unsigned long long aperf(int fd) {
   return rdmsr(fd, APERF);
 }
+
 static inline unsigned long long mperf(int fd) {
   return rdmsr(fd, MPERF);
 }
 
-  
-#endif
+static inline unsigned long long smicount(int fd) {
+  return rdmsr(fd, 0x34);
+}
