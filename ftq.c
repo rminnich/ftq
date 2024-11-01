@@ -38,8 +38,8 @@ static double ticksperns;
 static unsigned long long interval = DEFAULT_INTERVAL;
 static unsigned long delay_msec;
 static int numthreads = 1;
-static unsigned long total_count;
-static unsigned int max_work;
+static unsigned long long total_count;
+static unsigned long long max_work;
 
 void usage(char *av0)
 {
@@ -62,8 +62,8 @@ void header(FILE * f, int thread)
 	fprintf(f, "# pwelch(x(:,2),[],[],[],%f)\n", 1e9 / interval);
 	fprintf(f, "# thread %d, core %d\n", thread, get_pcoreid());
 	fprintf(f, "# start delay %lu msec\n", delay_msec);
-	fprintf(f, "# Total count is %lu\n", total_count);
-	fprintf(f, "# Max possible work is %u\n", max_work);
+	fprintf(f, "# Total count is %llu\n", total_count);
+	fprintf(f, "# Max possible work is %llu\n", max_work);
 	fprintf(f, "# Fraction is %g\n", (1.0 * total_count) / max_work);
 	if (ignore_wire_failures)
 		fprintf(f, "# Warning: not wired to this core; results may be flaky\n");
@@ -278,7 +278,7 @@ int main(int argc, char **argv)
 
 	fprintf(stderr, "Ticks per ns: %f\n", ticksperns);
 	fprintf(stderr, "Sample frequency is %f\n", 1e9 / interval);
-	fprintf(stderr, "Total count is %lu\n", total_count);
+	fprintf(stderr, "Total count is %llu\n", total_count);
 	for (j = 0; j < numthreads; j++) {
 		for (i = 0; i < numsamples; i++) {
 			int ix = j * numsamples + i;
@@ -288,7 +288,7 @@ int main(int argc, char **argv)
 		}
 	}
 	max_work *= numthreads * numsamples;
-	fprintf(stderr, "Max possible work is %u\n", max_work);
+	fprintf(stderr, "Max possible work is %llu\n", max_work);
 	fprintf(stderr, "Fraction is %g\n", (1.0 * total_count) / max_work);
 
 	if (use_stdout == 1) {
