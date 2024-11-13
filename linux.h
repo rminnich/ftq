@@ -70,3 +70,7 @@ static inline unsigned long long mperf(int fd) {
 static inline unsigned long long smicount(int fd) {
   return rdmsr(fd, 0x34);
 }
+
+static inline unsigned long long modulation(int fd) {
+  return rdmsr(fd, 0x19a);
+}

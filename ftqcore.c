@@ -56,7 +56,8 @@ unsigned long main_loops(struct sample *samples, size_t numsamples,
 		samples[done + offset].ticklast = ticklast;
 		samples[done + offset].count = count;
 #ifdef X86_PERF_MSR
-		samples[done + offset].aperf = smicount(fd);
+		samples[done + offset].aperf = modulation(fd);
+		//samples[done + offset].aperf = smicount(fd);
 		//samples[done + offset].mperf = mperf(fd);
 #endif
 		total_count += count;

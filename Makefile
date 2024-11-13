@@ -27,6 +27,10 @@ linux: linuxcore
 static: linuxcore
 	$(CROSS)$(CC) $(CFLAGS) --include linux.h -Wall ftqcore.o ftq.c linux.c -o ftq.static.linux -lpthread -lrt -static
 
+msrstatic: 
+	$(CROSS)$(CC) $(CFLAGS) --include msr.h -include linux.h -falign-functions=4096 -falign-loops=8 -c ftqcore.c -o ftqcore.o
+	$(CROSS)$(CC) $(CFLAGS) --include msr.h --include linux.h -Wall ftqcore.o ftq.c linux.c -o msrftq.static.linux -lpthread -lrt -static
+
 akaros: core
 	$(ACC) $(ACFLAGS) --include akaros.h -Wall ftqcore.o ftq.c akaros.c -o ftq.akaros -lpthread
 
