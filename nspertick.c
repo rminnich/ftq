@@ -1,8 +1,9 @@
+// SPDX-License-Identifier: GPL-2.0-only
 /**
  * ticks2ns.c, adapted from: 
  * ftq.c : Fixed Time Quantum microbenchmark
  *
- * Licensed under the terms of the GNU Public Licence.  See LICENCE_GPL
+ * Licensed under the terms of the GNU Public License.  See LICENSE
  * for details.
  */
 #include "ftq.h"

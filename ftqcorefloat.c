@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-only
 /**
  * ftq.c : Fixed Time Quantum microbenchmark
  *
@@ -11,7 +12,7 @@
  *              shared memory multiprocessors (multicore and SMPs).
  *              Also, removed unused TAU support.
  *
- * Licensed under the terms of the GNU Public Licence.  See LICENCE_GPL
+ * Licensed under the terms of the GNU Public License.  See LICENSE
  * for details.
  *
  * Keep this file OS-independent.
