@@ -112,6 +112,11 @@ int get_num_cores(void)
 	return sysconf(_SC_NPROCESSORS_ONLN);
 }
 
+int get_coreid(void)
+{
+	return -1;
+}
+
 void set_sched_realtime(void)
 {
 	const int policy = SCHED_FIFO;
@@ -125,4 +130,3 @@ void set_sched_realtime(void)
 		exit(1);
 	}
 }
-

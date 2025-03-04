@@ -42,5 +42,5 @@ double compute_ticksperns(void);
 int wireme(int core);
 
 int get_num_cores(void);
+int get_coreid(void);
 void set_sched_realtime(void);
-

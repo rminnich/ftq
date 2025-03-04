@@ -93,6 +93,18 @@ int get_num_cores(void)
 	return sysconf(_SC_NPROCESSORS_ONLN);
 }
 
+int get_coreid(void)
+{
+	processorid_t core;
+
+	if (processor_bind(P_LWPID, P_MYID, PBIND_QUERY, &core) < 0) {
+		perror("processor_bind");
+		return -1;
+	}
+
+	return (int)core;
+}
+
 void set_sched_realtime(void)
 {
 	const int policy = SCHED_FIFO;
@@ -105,16 +117,4 @@ void set_sched_realtime(void)
 		perror("sched_setscheduler");
 		exit(1);
 	}
-}
-
-int get_pcoreid(void)
-{
-	processorid_t core;
-
-	if (processor_bind(P_LWPID, P_MYID, PBIND_QUERY, &core) < 0) {
-		perror("processor_bind");
-		return -1;
-	}
-
-	return (int)core;
 }

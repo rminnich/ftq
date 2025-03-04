@@ -61,7 +61,7 @@ void header(FILE * f, int thread)
 	fprintf(f, "# octave: pkg load signal\n");
 	fprintf(f, "# x = load(<file name>)\n");
 	fprintf(f, "# pwelch(x(:,2),[],[],[],%f)\n", 1e9 / interval);
-	fprintf(f, "# thread %d, core %d\n", thread, get_pcoreid());
+	fprintf(f, "# thread %d, core %d\n", thread, get_coreid());
 	fprintf(f, "# start delay %lu msec\n", delay_msec);
 	fprintf(f, "# Total count is %llu\n", total_count);
 	fprintf(f, "# Max possible work is %llu\n", max_work);

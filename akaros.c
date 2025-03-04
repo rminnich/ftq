@@ -80,8 +80,11 @@ int get_num_cores(void)
 	return 1;
 }
 
-void set_sched_realtime(void)
+int get_coreid(void)
 {
-
+	return get_pcoreid();
 }
 
+void set_sched_realtime(void)
+{
+}
