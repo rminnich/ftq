@@ -5,20 +5,9 @@
 #include <ros/syscall.h>
 #include <parlib/timing.h>
 
-/* do what is needed and return the time resolution in nanoseconds. */
-int initticks()
-{
-	/* Right now, on Akaros, not much to do, and it's not very good. */
-	/* we'll assume 60 hz. */
-	return 16 * 1024 * 1024;
-}
-
 /* return current time in ns as a 'tick' */
 /* On akaros, this only returns the amount of time since boot, not since 1970.
  * This is fine for now, since the only user of nsec subtracts end - start.
- *
- * TODO: at least implement '#c/bintime!' Then initticks could
- * open it and this would be a simple read(bintimefd, &64bit, 8);
  */
 ticks nsec_ticks()
 {
