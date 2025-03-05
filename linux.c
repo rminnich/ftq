@@ -32,7 +32,7 @@ ticks nsec_ticks()
 }
 
 /* do the best you can. */
-void osinfo(FILE * f, int core)
+void osinfo(FILE *f, int core)
 {
 	int readingcore = -1;
 	struct utsname utsname;
