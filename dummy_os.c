@@ -45,3 +45,8 @@ int get_coreid(void)
 void set_sched_realtime(void)
 {
 }
+
+struct sample *allocate_samples(size_t samples_size)
+{
+	return NULL;
+}

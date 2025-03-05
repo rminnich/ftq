@@ -7,6 +7,7 @@
 #include <sys/processor.h>
 #include <sys/procset.h>
 #include <sys/utsname.h>
+#include <sys/mman.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -123,4 +124,22 @@ void set_sched_realtime(void)
 		perror("sched_setscheduler");
 		exit(1);
 	}
+}
+
+struct sample *allocate_samples(size_t samples_size)
+{
+	struct sample *samples;
+
+	samples = mmap(0, samples_size, PROT_READ | PROT_WRITE,
+	               MAP_ANONYMOUS | MAP_PRIVATE | MAP_POPULATE,
+	               -1, 0);
+	if (samples != MAP_FAILED) {
+		if (mlock(samples, samples_size) < 0)
+			perror("Failed to mlock");
+	} else {
+		perror("Failed to mmap, will just malloc");
+		samples = malloc(samples_size);
+		assert(samples);
+	}
+	return samples;
 }

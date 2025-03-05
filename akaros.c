@@ -3,6 +3,7 @@
 
 #include "ftq.h"
 
+#include <sys/mman.h>
 #include <stdio.h>
 #include <time.h>
 #include <pthread.h>
@@ -66,7 +67,6 @@ int threadinit(int numthreads)
 	vcore_request_total(numthreads);
 	parlib_never_vc_request = TRUE;
 	return 0;
-
 }
 
 int wireme(int core)
@@ -92,4 +92,15 @@ int get_coreid(void)
 
 void set_sched_realtime(void)
 {
+}
+
+struct sample *allocate_samples(size_t samples_size)
+{
+	struct sample *samples;
+
+	samples = mmap(0, samples_size, PROT_READ | PROT_WRITE,
+	               MAP_ANONYMOUS | MAP_PRIVATE | MAP_POPULATE | MAP_LOCKED,
+	               -1, 0);
+	assert(samples != MAP_FAILED);
+	return samples;
 }
