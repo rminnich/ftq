@@ -1,4 +1,9 @@
 // SPDX-License-Identifier: GPL-2.0-only
+#define _GNU_SOURCE
+
+#include "ftq.h"
+
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -6,7 +11,9 @@
 #include <errno.h>
 #include <sched.h>
 #include <sys/utsname.h>
-#include "ftq.h"
+
+/* what clock do we use for the OS timer? */
+#define TICKCLOCK CLOCK_MONOTONIC_RAW
 
 /* return current time in ns as a 'tick' */
 ticks nsec_ticks()

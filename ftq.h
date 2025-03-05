@@ -6,6 +6,13 @@
 #include <unistd.h>
 #include <string.h>
 #include <assert.h>
+
+/*
+ * use cycle timers from FFTW3 (http://www.fftw.org/).  this defines a
+ * "ticks" typedef, usually unsigned long long, that is used to store
+ * timings.  currently this code will NOT work if the ticks typedef is
+ * something other than an unsigned long long.
+ */
 #include "cycle.h"
 
 /** defaults **/

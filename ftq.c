@@ -25,6 +25,10 @@
 #include "ftq.h"
 #include <sys/mman.h>
 #include <sys/param.h>
+#include <getopt.h>
+#include <pthread.h>
+#include <stdint.h>
+#include <unistd.h>
 
 int ignore_wire_failures = 0;
 

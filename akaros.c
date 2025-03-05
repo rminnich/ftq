@@ -1,6 +1,11 @@
 // SPDX-License-Identifier: GPL-2.0-only
+#define _GNU_SOURCE
+
+#include "ftq.h"
+
 #include <stdio.h>
 #include <time.h>
+#include <pthread.h>
 #include <sys/utsname.h>
 #include <ros/syscall.h>
 #include <parlib/timing.h>
