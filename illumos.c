@@ -1,8 +1,13 @@
 // SPDX-License-Identifier: GPL-2.0-only
+#define _GNU_SOURCE
+
+#include "ftq.h"
+
 #include <sys/types.h>
 #include <sys/processor.h>
 #include <sys/procset.h>
 #include <sys/utsname.h>
+#include <sys/mman.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -10,21 +15,9 @@
 #include <time.h>
 #include <errno.h>
 #include <sched.h>
-#include "ftq.h"
 
-/* do what is needed and return the time resolution in nanoseconds. */
-int initticks()
-{
-	struct timespec t;
-	int ret;
-
-	ret = clock_getres(TICKCLOCK, &t);
-	if (ret) {
-		fprintf(stderr, "%s: clock_getres failed\n", __func__);
-		exit(1);
-	}
-	return (int)t.tv_nsec;
-}
+/* what clock do we use for the OS timer? */
+#define TICKCLOCK CLOCK_MONOTONIC_RAW
 
 /* return current time in ns as a 'tick' */
 ticks nsec_ticks()
@@ -107,6 +100,18 @@ int get_num_cores(void)
 	return sysconf(_SC_NPROCESSORS_ONLN);
 }
 
+int get_coreid(void)
+{
+	processorid_t core;
+
+	if (processor_bind(P_LWPID, P_MYID, PBIND_QUERY, &core) < 0) {
+		perror("processor_bind");
+		return -1;
+	}
+
+	return (int)core;
+}
+
 void set_sched_realtime(void)
 {
 	const int policy = SCHED_FIFO;
@@ -121,14 +126,20 @@ void set_sched_realtime(void)
 	}
 }
 
-int get_pcoreid(void)
+struct sample *allocate_samples(size_t samples_size)
 {
-	processorid_t core;
+	struct sample *samples;
 
-	if (processor_bind(P_LWPID, P_MYID, PBIND_QUERY, &core) < 0) {
-		perror("processor_bind");
-		return -1;
+	samples = mmap(0, samples_size, PROT_READ | PROT_WRITE,
+	               MAP_ANONYMOUS | MAP_PRIVATE | MAP_POPULATE,
+	               -1, 0);
+	if (samples != MAP_FAILED) {
+		if (mlock(samples, samples_size) < 0)
+			perror("Failed to mlock");
+	} else {
+		perror("Failed to mmap, will just malloc");
+		samples = malloc(samples_size);
+		assert(samples);
 	}
-
-	return (int)core;
+	return samples;
 }

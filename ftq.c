@@ -23,8 +23,11 @@
  * for details.
  */
 #include "ftq.h"
-#include <sys/mman.h>
 #include <sys/param.h>
+#include <getopt.h>
+#include <pthread.h>
+#include <stdint.h>
+#include <unistd.h>
 
 int ignore_wire_failures = 0;
 
@@ -61,7 +64,7 @@ void header(FILE * f, int thread)
 	fprintf(f, "# octave: pkg load signal\n");
 	fprintf(f, "# x = load(<file name>)\n");
 	fprintf(f, "# pwelch(x(:,2),[],[],[],%f)\n", 1e9 / interval);
-	fprintf(f, "# thread %d, core %d\n", thread, get_pcoreid());
+	fprintf(f, "# thread %d, core %d\n", thread, get_coreid());
 	fprintf(f, "# start delay %lu msec\n", delay_msec);
 	fprintf(f, "# Total count is %llu\n", total_count);
 	fprintf(f, "# Max possible work is %llu\n", max_work);
@@ -210,17 +213,8 @@ int main(int argc, char **argv)
 	}
 	/* allocate sample storage */
 	samples_size = sizeof(struct sample) * numsamples * numthreads;
-	samples = mmap(0, samples_size, PROT_READ | PROT_WRITE,
-	               MAP_ANONYMOUS | MAP_PRIVATE | MAP_POPULATE,
-	               -1, 0);
-	if (samples != MAP_FAILED) {
-		if (mlock(samples, samples_size) < 0)
-			perror("Failed to mlock");
-	} else {
-		perror("Failed to mmap, will just malloc");
-		samples = malloc(samples_size);
-		assert(samples);
-	}
+	samples = allocate_samples(samples_size);
+	assert(samples);
 	/* in case mmap failed or MAP_POPULATE didn't populate */
 	memset(samples, 0, samples_size);
 

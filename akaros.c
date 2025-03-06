@@ -1,24 +1,19 @@
 // SPDX-License-Identifier: GPL-2.0-only
+#define _GNU_SOURCE
+
+#include "ftq.h"
+
+#include <sys/mman.h>
 #include <stdio.h>
 #include <time.h>
+#include <pthread.h>
 #include <sys/utsname.h>
 #include <ros/syscall.h>
 #include <parlib/timing.h>
 
-/* do what is needed and return the time resolution in nanoseconds. */
-int initticks()
-{
-	/* Right now, on Akaros, not much to do, and it's not very good. */
-	/* we'll assume 60 hz. */
-	return 16 * 1024 * 1024;
-}
-
 /* return current time in ns as a 'tick' */
 /* On akaros, this only returns the amount of time since boot, not since 1970.
  * This is fine for now, since the only user of nsec subtracts end - start.
- *
- * TODO: at least implement '#c/bintime!' Then initticks could
- * open it and this would be a simple read(bintimefd, &64bit, 8);
  */
 ticks nsec_ticks()
 {
@@ -26,7 +21,7 @@ ticks nsec_ticks()
 }
 
 /* do the best you can. */
-void osinfo(FILE * f, int core)
+void osinfo(FILE *f, int core)
 {
 	int readingcore = -1;
 	struct utsname utsname;
@@ -72,7 +67,6 @@ int threadinit(int numthreads)
 	vcore_request_total(numthreads);
 	parlib_never_vc_request = TRUE;
 	return 0;
-
 }
 
 int wireme(int core)
@@ -91,8 +85,22 @@ int get_num_cores(void)
 	return 1;
 }
 
-void set_sched_realtime(void)
+int get_coreid(void)
 {
-
+	return get_pcoreid();
 }
 
+void set_sched_realtime(void)
+{
+}
+
+struct sample *allocate_samples(size_t samples_size)
+{
+	struct sample *samples;
+
+	samples = mmap(0, samples_size, PROT_READ | PROT_WRITE,
+	               MAP_ANONYMOUS | MAP_PRIVATE | MAP_POPULATE | MAP_LOCKED,
+	               -1, 0);
+	assert(samples != MAP_FAILED);
+	return samples;
+}

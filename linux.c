@@ -1,4 +1,9 @@
 // SPDX-License-Identifier: GPL-2.0-only
+#define _GNU_SOURCE
+
+#include "ftq.h"
+
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -6,21 +11,10 @@
 #include <errno.h>
 #include <sched.h>
 #include <sys/utsname.h>
-#include "ftq.h"
+#include <sys/mman.h>
 
-/* do what is needed and return the time resolution in nanoseconds. */
-int initticks()
-{
-	struct timespec t;
-	int ret;
-
-	ret = clock_getres(TICKCLOCK, &t);
-	if (ret) {
-		fprintf(stderr, "%s: clock_getres failed\n", __func__);
-		exit(1);
-	}
-	return (int)t.tv_nsec;
-}
+/* what clock do we use for the OS timer? */
+#define TICKCLOCK CLOCK_MONOTONIC_RAW
 
 /* return current time in ns as a 'tick' */
 ticks nsec_ticks()
@@ -39,7 +33,7 @@ ticks nsec_ticks()
 }
 
 /* do the best you can. */
-void osinfo(FILE * f, int core)
+void osinfo(FILE *f, int core)
 {
 	int readingcore = -1;
 	struct utsname utsname;
@@ -126,6 +120,11 @@ int get_num_cores(void)
 	return sysconf(_SC_NPROCESSORS_ONLN);
 }
 
+int get_coreid(void)
+{
+	return -1;
+}
+
 void set_sched_realtime(void)
 {
 	const int policy = SCHED_FIFO;
@@ -140,3 +139,20 @@ void set_sched_realtime(void)
 	}
 }
 
+struct sample *allocate_samples(size_t samples_size)
+{
+	struct sample *samples;
+
+	samples = mmap(0, samples_size, PROT_READ | PROT_WRITE,
+	               MAP_ANONYMOUS | MAP_PRIVATE | MAP_POPULATE,
+	               -1, 0);
+	if (samples != MAP_FAILED) {
+		if (mlock(samples, samples_size) < 0)
+			perror("Failed to mlock");
+	} else {
+		perror("Failed to mmap, will just malloc");
+		samples = malloc(samples_size);
+		assert(samples);
+	}
+	return samples;
+}
