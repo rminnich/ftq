@@ -12,7 +12,7 @@ PHONY = core linux akaros illumos dummy_os clean
 all: linux dummy_os
 
 core:
-	$(CROSS)$(CC) $(CFLAGS) -falign-functions=4096 -falign-loops=8 -c ftqcore.c -o ftqcore.o
+	$(CROSS)$(CC) $(CFLAGS) -O0 -falign-functions=4096 -falign-loops=8 -c ftqcore.c -o ftqcore.o
 
 linux: core
 	$(CROSS)$(CC) $(CFLAGS) -Wall ftqcore.o ftq.c linux.c -o ftq.linux -lpthread -lrt

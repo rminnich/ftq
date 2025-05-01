@@ -24,12 +24,15 @@
  * as needed.                                                            *
  *************************************************************************/
 
+/* Global to prevent the compiler from throwing away the work. */
+float work_keep;
+
 unsigned long main_loops(struct sample *samples, size_t numsamples,
                          ticks tickinterval, int offset)
 {
-	int k;
 	unsigned long done;
-	volatile unsigned long long count;
+	unsigned long count;
+	float work = 133.7;
 	unsigned long total_count = 0;
 	ticks ticknow, ticklast, tickend;
 
@@ -41,15 +44,60 @@ unsigned long main_loops(struct sample *samples, size_t numsamples,
 
 		for (ticknow = ticklast = getticks();
 			 ticknow < tickend; ticknow = getticks()) {
-			for (k = 0; k < ITERCOUNT; k++)
+
+			/*
+			 * This is the older style.  The problem is that even
+			 * without any OS/platform interference, this code will
+			 * not take a constant amount of time due to
+			 * microarchitectural details.  The IPC can vary wildly
+			 * by factors of 3-4x.  See the writeup elsewhere for
+			 * details.
+			 *
+			 * But let's keep the code around for the hell of it.
+			 */
+#if 0
+			for (int k = 0; k < ITERCOUNT; k++)
 				count++;
-			for (k = 0; k < (ITERCOUNT - 1); k++)
+			for (int k = 0; k < (ITERCOUNT - 1); k++)
 				count--;
+#endif
+
+			/*
+			 * not the prettiest, but it's the stablest workload
+			 * i've found on x86, especially SPR/Golden Cove.
+			 *
+			 * you don't want the work loop to be so short that it
+			 * hammers rdtsc, but also not obnoxiously long.
+			 */
+			work = work * work;
+			work = work * work;
+			work = work * work;
+			work = work * work;
+			work = work * work;
+			work = work * work;
+			work = work * work;
+			work = work * work;
+			work = work * work;
+			work = work * work;
+			work = work * work;
+			work = work * work;
+			work = work * work;
+			work = work * work;
+			work = work * work;
+			work = work * work;
+			work = work * work;
+			work = work * work;
+			work = work * work;
+			work = work * work;
+
+			count++;
 		}
 
 		samples[done + offset].ticklast = ticklast;
 		samples[done + offset].count = count;
 		total_count += count;
 	}
+
+	work_keep = work;
 	return total_count;
 }
